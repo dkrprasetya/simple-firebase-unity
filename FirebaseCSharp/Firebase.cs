@@ -35,7 +35,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.IO;
-using System.Reflection;
 
 namespace FirebaseCSharp
 {
