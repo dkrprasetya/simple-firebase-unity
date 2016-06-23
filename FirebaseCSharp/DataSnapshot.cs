@@ -2,7 +2,7 @@
 
 Class: DataSnapshot.cs
 ==============================================
-Last update: 2016-03-09  (by Dikra)
+Last update: 2016-06-23  (by Dikra)
 ==============================================
 
 Copyright (c) 2016  M Dikra Prasetya
@@ -55,9 +55,9 @@ namespace FirebaseCSharp
         /// Creates snapshot from Json string 
         /// </summary>
         /// <param name="json">Json string</param>
-        public DataSnapshot(string _json)
+        public DataSnapshot(string _json = "")
         {
-            object obj = Json.Deserialize(_json);
+			object obj = (_json != null && _json.Length > 0)?Json.Deserialize(_json):null;
 
             if (obj is Dictionary<string, object>)
                 val_dict = obj as Dictionary<string, object>;

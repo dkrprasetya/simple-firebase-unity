@@ -2,7 +2,7 @@
 
 Class: FirebaseRoot.cs
 ==============================================
-Last update: 2016-03-14  (by Dikra)
+Last update: 2016-06-23  (by Dikra)
 ==============================================
 
 Copyright (c) 2016  M Dikra Prasetya
@@ -73,7 +73,7 @@ namespace FirebaseCSharp
         {
             if (firstTimeInitiated)
             {
-                ServicePointManager.ServerCertificateValidationCallback += new RemoteCertificateValidationCallback((sender, certificate, chain, policyErrors) => { return true; });
+				ServicePointManager.ServerCertificateValidationCallback += RemoteCertificateValidationCallback;
                 firstTimeInitiated = false;
             }
 
