@@ -2,7 +2,7 @@
 
 Class: Firebase.cs
 ==============================================
-Last update: 2016-03-14  (by Dikra)
+Last update: 2016-06-23  (by Dikra)
 ==============================================
 
 Copyright (c) 2016  M Dikra Prasetya
@@ -242,6 +242,7 @@ namespace FirebaseCSharp
                 string url = Endpoint;
                 if (param != "")
                     url += "?" + param;
+
                 WebRequest rq = WebRequest.Create(url);
 
                 FieldInfo headersFieldInfo = rq.GetType().GetField("webHeaders", System.Reflection.BindingFlags.NonPublic
@@ -261,9 +262,16 @@ namespace FirebaseCSharp
                 {
                     string responseValue = string.Empty;
 
+					if (resp.StatusCode == HttpStatusCode.NoContent)
+					{
+						DataSnapshot snapshot = new DataSnapshot();
+						if (OnFetchSuccess != null) OnFetchSuccess(this, snapshot);
+						return;
+					}
+
                     if (resp.StatusCode != HttpStatusCode.OK)
                     {
-                        if (OnFetchFailed != null) OnFetchFailed(this, new FirebaseError(string.Format("Request failed. Received HTTP {0}", resp.StatusCode)));
+						if (OnFetchFailed != null) OnFetchFailed(this, FirebaseError.Create(resp.StatusCode));
                         return;
                     }
 
@@ -283,10 +291,14 @@ namespace FirebaseCSharp
                     }
                     else
                     {
-                        if (OnFetchFailed != null) OnFetchFailed(this, new FirebaseError("No response received."));
+						if (OnFetchFailed != null) OnFetchFailed(this, new FirebaseError(resp.StatusCode, "No response received."));
                     }
                 }
             }
+			catch (WebException webEx) 
+			{
+				if (OnFetchFailed != null) OnFetchFailed(this, FirebaseError.Create(webEx));
+			}
             catch (Exception ex)
             {
                 if (OnFetchFailed != null) OnFetchFailed(this, new FirebaseError(ex.Message));
@@ -385,9 +397,16 @@ namespace FirebaseCSharp
                 {
                     string responseValue = string.Empty;
 
+					if (resp.StatusCode == HttpStatusCode.NoContent)
+					{
+						DataSnapshot snapshot = new DataSnapshot();
+						if (OnUpdateSuccess != null) OnUpdateSuccess(this, snapshot);
+						return;
+					}
+
                     if (resp.StatusCode != HttpStatusCode.OK)
                     {
-                        if (OnUpdateFailed != null) OnUpdateFailed(this, new FirebaseError(string.Format("Request failed. Received HTTP {0}", resp.StatusCode)));
+						if (OnUpdateFailed != null) OnUpdateFailed(this, FirebaseError.Create(resp.StatusCode));
                         return;
                     }
 
@@ -407,11 +426,15 @@ namespace FirebaseCSharp
                     }
                     else
                     {
-                        if (OnUpdateFailed != null) OnUpdateFailed(this, new FirebaseError("No response received."));
+						if (OnUpdateFailed != null) OnUpdateFailed(this, new FirebaseError(resp.StatusCode, "No response received."));
                     }
                 }
 
             }
+			catch (WebException webEx) 
+			{
+				if (OnUpdateFailed != null) OnUpdateFailed(this, FirebaseError.Create(webEx));
+			}
             catch (Exception ex)
             {
                 if (OnUpdateFailed != null) OnUpdateFailed(this, new FirebaseError(ex.Message));
@@ -518,9 +541,16 @@ namespace FirebaseCSharp
                 {
                     string responseValue = string.Empty;
 
+					if (resp.StatusCode == HttpStatusCode.NoContent)
+					{
+						DataSnapshot snapshot = new DataSnapshot();
+						if (OnPushSuccess != null) OnPushSuccess(this, snapshot);
+						return;
+					}
+
                     if (resp.StatusCode != HttpStatusCode.OK)
                     {
-                        if (OnPushFailed != null) OnPushFailed(this, new FirebaseError(string.Format("Request failed. Received HTTP {0}", resp.StatusCode)));
+						if (OnPushFailed != null) OnPushFailed(this, FirebaseError.Create(resp.StatusCode));
                         return;
                     }
 
@@ -540,11 +570,15 @@ namespace FirebaseCSharp
                     }
                     else
                     {
-                        if (OnPushFailed != null) OnPushFailed(this, new FirebaseError("No response received."));
+						if (OnPushFailed != null) OnPushFailed(this, new FirebaseError(resp.StatusCode, "No response received."));
                     }
 
                 }
             }
+			catch (WebException webEx) 
+			{
+				if (OnPushFailed != null) OnPushFailed(this, FirebaseError.Create(webEx));
+			}
             catch (Exception ex)
             {
                 if (OnPushFailed != null) OnPushFailed(this, new FirebaseError(ex.Message));
@@ -622,9 +656,16 @@ namespace FirebaseCSharp
                 {
                     string responseValue = string.Empty;
 
+					if (resp.StatusCode == HttpStatusCode.NoContent)
+					{
+						DataSnapshot snapshot = new DataSnapshot();
+						if (OnDeleteSuccess != null) OnDeleteSuccess(this, snapshot);
+						return;
+					}
+
                     if (resp.StatusCode != HttpStatusCode.OK)
                     {
-                        if (OnDeleteFailed != null) OnDeleteFailed(this, new FirebaseError(string.Format("Request failed. Received HTTP {0}", resp.StatusCode)));
+						if (OnDeleteFailed != null) OnDeleteFailed(this, FirebaseError.Create(resp.StatusCode));
                         return;
                     }
 
@@ -644,10 +685,14 @@ namespace FirebaseCSharp
                     }
                     else
                     {
-                        if (OnDeleteFailed != null) OnDeleteFailed(this, new FirebaseError("No response received."));
+						if (OnDeleteFailed != null) OnDeleteFailed(this, new FirebaseError(resp.StatusCode, "No response received."));
                     }
                 }
             }
+			catch (WebException webEx) 
+			{
+				if (OnDeleteFailed != null) OnDeleteFailed(this, FirebaseError.Create(webEx));
+			}
             catch (Exception ex)
             {
                 if (OnDeleteFailed != null) OnDeleteFailed(this, new FirebaseError(ex.Message));
