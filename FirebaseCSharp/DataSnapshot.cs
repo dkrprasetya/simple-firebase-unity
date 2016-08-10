@@ -30,12 +30,13 @@ Copyright (c) 2016  M Dikra Prasetya
 
 */
 
-using FirebaseCSharp.MiniJSON;
 using System.Collections.Generic;
 using System.Security;
 
-namespace FirebaseCSharp
+namespace SimpleFirebaseUnity
 {
+	using MiniJSON;
+
     public class DataSnapshot
     {
         protected object val_obj;
@@ -124,10 +125,16 @@ namespace FirebaseCSharp
         [SecuritySafeCritical]
         public T Value<T>()
         {
-            if (val_obj != null)
-                return (T)val_obj;
-            object obj = val_dict;
-            return (T)obj;
+			try
+			{
+				if (val_obj != null)
+					return (T)val_obj;
+				object obj = val_dict;
+				return (T)obj;
+			}
+			catch {
+				return default(T);
+			}
         }
     }
 }

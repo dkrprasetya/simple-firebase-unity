@@ -2,7 +2,7 @@
 
 Class: Firebase.cs
 ==============================================
-Last update: 2016-06-23  (by Dikra)
+Last update: 2016-07-27  (by Dikra)
 ==============================================
 
 Copyright (c) 2016  M Dikra Prasetya
@@ -30,26 +30,33 @@ Copyright (c) 2016  M Dikra Prasetya
 
 */
 
+using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
-using System.IO;
-using System.Reflection;
 
-namespace FirebaseCSharp
+namespace SimpleFirebaseUnity
 {
     using MiniJSON;
-    using System.Collections;
     [Serializable]
     public class Firebase
     {
-        public Action<Firebase, DataSnapshot> OnFetchSuccess;
-        public Action<Firebase, FirebaseError> OnFetchFailed;
+        const string SERVER_VALUE_TIMESTAMP = "{\".sv\": \"timestamp\"}";
+
+        public Action<Firebase, DataSnapshot> OnGetSuccess;
+        public Action<Firebase, FirebaseError> OnGetFailed;
+
+        public Action<Firebase, DataSnapshot> OnSetSuccess;
+        public Action<Firebase, FirebaseError> OnSetFailed;
+
         public Action<Firebase, DataSnapshot> OnUpdateSuccess;
         public Action<Firebase, FirebaseError> OnUpdateFailed;
+
         public Action<Firebase, DataSnapshot> OnPushSuccess;
         public Action<Firebase, FirebaseError> OnPushFailed;
+
         public Action<Firebase, DataSnapshot> OnDeleteSuccess;
         public Action<Firebase, FirebaseError> OnDeleteFailed;
 
@@ -58,7 +65,7 @@ namespace FirebaseCSharp
         protected string key;
         protected string fullKey;
 
-        /**** GET-SET ****/
+        #region GET-SET
 
         /// <summary>
         /// Parent of current firebase pointer
@@ -89,7 +96,7 @@ namespace FirebaseCSharp
         {
             get
             {
-                return "https://" + Host + "/" + FullKey + "/.json";
+                return "https://" + Host + FullKey + "/.json";
             }
         }
 
@@ -142,6 +149,19 @@ namespace FirebaseCSharp
             }
         }
 
+        /// <summary>
+        /// Gets the rules endpoint.
+        /// </summary>
+        /// <value>The rules endpoint.</value>
+        public virtual string RulesEndpoint
+        {
+            get
+            {
+                return root.RulesEndpoint;
+            }
+        }
+
+
         /**** CONSTRUCTOR ****/
 
         /// <summary>
@@ -150,12 +170,32 @@ namespace FirebaseCSharp
         /// <param name="_parent">Parent Firebase pointer</param>
         /// <param name="_key">Key under parent Firebase</param>
         /// <param name="_root">Root Firebase pointer</param>
-        internal Firebase(Firebase _parent, string _key, FirebaseRoot _root)
+        /// <param name="inheritCallback">If set to <c>true</c> inherit callback.</param>
+        internal Firebase(Firebase _parent, string _key, FirebaseRoot _root, bool inheritCallback = false)
         {
             parent = _parent;
             key = _key;
             root = _root;
+
             fullKey = parent.FullKey + "/" + key;
+
+            if (inheritCallback)
+            {
+                OnGetSuccess = parent.OnGetSuccess;
+                OnGetFailed = parent.OnGetFailed;
+
+                OnSetSuccess = parent.OnSetSuccess;
+                OnSetFailed = parent.OnSetFailed;
+
+                OnUpdateSuccess = parent.OnUpdateSuccess;
+                OnUpdateFailed = parent.OnUpdateFailed;
+
+                OnPushSuccess = parent.OnPushSuccess;
+                OnPushFailed = parent.OnPushFailed;
+
+                OnDeleteSuccess = parent.OnDeleteSuccess;
+                OnDeleteFailed = parent.OnDeleteFailed;
+            }
         }
 
         internal Firebase()
@@ -165,23 +205,24 @@ namespace FirebaseCSharp
             root = null;
         }
 
-        /**** BASIC FUNCTIONS ****/
+        #endregion
+
+        #region BASIC FUNCTIONS
 
         /// <summary>
         /// Get Firebase child from given key
         /// </summary>
         /// <param name="_key">A string</param>
-        /// <returns></returns>
-        public Firebase Child(string _key)
+        /// <param name="inheritCallback">If set to <c>true</c> inherit callback.</param>
+        public Firebase Child(string _key, bool inheritCallback = false)
         {
-            return new Firebase(this, _key, root);
+            return new Firebase(this, _key, root, inheritCallback);
         }
 
         /// <summary>
         /// Get Firebase childs from given keys
         /// </summary>
         /// <param name="_keys">List of string</param>
-        /// <returns></returns>
         public List<Firebase> Childs(List<string> _keys)
         {
             List<Firebase> childs = new List<Firebase>();
@@ -194,7 +235,6 @@ namespace FirebaseCSharp
         /// Get Firebase childs from given keys
         /// </summary>
         /// <param name="_keys">Array of string</param>
-        /// <returns></returns>
         public List<Firebase> Childs(string[] _keys)
         {
             List<Firebase> childs = new List<Firebase>();
@@ -204,17 +244,47 @@ namespace FirebaseCSharp
             return childs;
         }
 
-        protected virtual string SeekEndpoint()
+        /// <summary>
+        /// Get a fresh copy of this Firebase object
+        /// </summary>
+        /// <param name="inheritCallback">If set to <c>true</c> inherit callback.</param>
+        public Firebase Copy(bool inheritCallback = false)
         {
-            return parent.SeekEndpoint() + "/" + key;
+            Firebase temp;
+            if (parent == null)
+                temp = root.Copy();
+            else
+                temp = new Firebase(parent, key, root);
+
+            if (inheritCallback)
+            {
+                temp.OnGetSuccess = OnGetSuccess;
+                temp.OnGetFailed = OnGetFailed;
+
+                temp.OnSetSuccess = OnSetSuccess;
+                temp.OnSetFailed = OnSetFailed;
+
+                temp.OnUpdateSuccess = OnUpdateSuccess;
+                temp.OnUpdateFailed = OnUpdateFailed;
+
+                temp.OnPushSuccess = OnPushSuccess;
+                temp.OnPushFailed = OnPushFailed;
+
+                temp.OnDeleteSuccess = OnDeleteSuccess;
+                temp.OnDeleteFailed = OnDeleteFailed;
+            }
+
+            return temp;
         }
 
-        /**** REST FUNCTIONS ****/
+        #endregion
+
+        #region REST FUNCTIONS
 
         /// <summary>
-        /// Fetch data from Firebase. Calls OnFetchSuccess on success, OnFetchFailed on failed.
-        /// OnFetchSuccess action contains the corresponding Firebase and the fetched Snapshot
-        /// OnFetchFailed action contains the error exception
+        /// Fetch data from Firebase. Calls OnGetSuccess on success, OnGetFailed on failed.
+        /// OnGetSuccess action contains the corresponding Firebase and the fetched Snapshot
+        /// OnGetFailed action contains the error exception
         /// </summary>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
@@ -224,9 +294,9 @@ namespace FirebaseCSharp
         }
 
         /// <summary>
-        /// Fetch data from Firebase. Calls OnFetchSuccess on success, OnFetchFailed on failed.
-        /// OnFetchSuccess action contains the corresponding Firebase and the fetched Snapshot
-        /// OnFetchFailed action contains the error exception
+        /// Fetch data from Firebase. Calls OnGetSuccess on success, OnGetFailed on failed.
+        /// OnGetSuccess action contains the corresponding Firebase and the fetched Snapshot
+        /// OnGetFailed action contains the error exception
         /// </summary>
         /// <param name="param">REST call parameters on a string. Example: &quot;orderBy=&#92;"$key&#92;"&quot;print=pretty&quot;shallow=true"></param>
         /// <returns></returns>
@@ -240,74 +310,27 @@ namespace FirebaseCSharp
                 }
 
                 string url = Endpoint;
+
+                param = WWW.EscapeURL(param);
+
                 if (param != "")
                     url += "?" + param;
 
-                WebRequest rq = WebRequest.Create(url);
-
-                FieldInfo headersFieldInfo = rq.GetType().GetField("webHeaders", System.Reflection.BindingFlags.NonPublic
-                    | System.Reflection.BindingFlags.Instance
-                    | System.Reflection.BindingFlags.GetField);
-
-                CusteredHeaderCollection WssHeaders = new CusteredHeaderCollection(Host);
-
-                headersFieldInfo.SetValue(rq, WssHeaders);
-
-                rq.Proxy = null;
-
-                rq.Method = "GET";
-                rq.ContentLength = 0;
-
-                using (HttpWebResponse resp = (HttpWebResponse)rq.GetResponse())
-                {
-                    string responseValue = string.Empty;
-
-					if (resp.StatusCode == HttpStatusCode.NoContent)
-					{
-						DataSnapshot snapshot = new DataSnapshot();
-						if (OnFetchSuccess != null) OnFetchSuccess(this, snapshot);
-						return;
-					}
-
-                    if (resp.StatusCode != HttpStatusCode.OK)
-                    {
-						if (OnFetchFailed != null) OnFetchFailed(this, FirebaseError.Create(resp.StatusCode));
-                        return;
-                    }
-
-                    using (Stream responseStream = resp.GetResponseStream())
-                    {
-                        if (responseStream != null)
-                            using (StreamReader rdr = new StreamReader(responseStream))
-                            {
-                                responseValue = rdr.ReadToEnd();
-                            }
-                    }
-
-                    if (responseValue != "")
-                    {
-                        DataSnapshot snapshot = new DataSnapshot(responseValue);
-                        if (OnFetchSuccess != null) OnFetchSuccess(this, snapshot);
-                    }
-                    else
-                    {
-						if (OnFetchFailed != null) OnFetchFailed(this, new FirebaseError(resp.StatusCode, "No response received."));
-                    }
-                }
+                root.StartCoroutine(RequestCoroutine(url, null, null, OnGetSuccess, OnGetFailed));
             }
-			catch (WebException webEx) 
-			{
-				if (OnFetchFailed != null) OnFetchFailed(this, FirebaseError.Create(webEx));
-			}
+            catch (WebException webEx)
+            {
+                if (OnGetFailed != null) OnGetFailed(this, FirebaseError.Create(webEx));
+            }
             catch (Exception ex)
             {
-                if (OnFetchFailed != null) OnFetchFailed(this, new FirebaseError(ex.Message));
+                if (OnGetFailed != null) OnGetFailed(this, new FirebaseError(ex.Message));
             }
 
         }
 
         /// <summary>
-        /// Update value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
         /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnUpdateFailed action contains the error exception
         /// </summary>
@@ -324,11 +347,11 @@ namespace FirebaseCSharp
         }
 
         /// <summary>
-        /// Update value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
-        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
-        /// OnUpdateFailed action contains the error exception
+        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnSetFailed action contains the error exception
         /// </summary>
-        /// <param name="_val">Update value</param>
+        /// <param name="_val">Set value</param>
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
         public void SetValue(object _val, string param = "")
@@ -340,101 +363,110 @@ namespace FirebaseCSharp
                     param = (new FirebaseParam(param).Auth(Credential)).Parameter;
                 }
 
-                string url;
+                string url = Endpoint;
 
-                if (_val is Dictionary<string, object>)
-                {
-                    url = Endpoint;
-                }
-                else
-                {
-                    if (parent == null)
-                    {
-                        if (OnUpdateFailed != null) OnUpdateFailed(this, new FirebaseError("Cannot set non-{key:value} object to root Firebase."));
-                        return;
-                    }
-
-                    url = parent.Endpoint;
-
-                    Dictionary<string, object> tempDict = new Dictionary<string, object>();
-                    tempDict[key] = _val;
-                    _val = tempDict;
-                }
+                param = WWW.EscapeURL(param);
 
                 if (param != string.Empty)
                     url += "?" + param;
 
-                HttpWebRequest rq = (HttpWebRequest)WebRequest.Create(url);
-
-
-                FieldInfo headersFieldInfo = rq.GetType().GetField("webHeaders", System.Reflection.BindingFlags.NonPublic
-                                        | System.Reflection.BindingFlags.Instance
-                                        | System.Reflection.BindingFlags.GetField);
-
-
-                CusteredHeaderCollection WssHeaders = new CusteredHeaderCollection(Host);
-
-                headersFieldInfo.SetValue(rq, WssHeaders);
-
-                rq.Proxy = null;
-
-                rq.Method = "PATCH";
-                rq.ContentLength = 0;
-                rq.ContentType = "application/json";
-
-
+                Dictionary<string, string> headers = new Dictionary<string, string>();
+                headers.Add("Content-Type", "application/json");
+                headers.Add("X-HTTP-Method-Override", "PUT");
 
                 //UTF8Encoding encoding = new UTF8Encoding();
                 byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(Json.Serialize(_val));
-                rq.ContentLength = bytes.Length;
 
-                using (Stream writeStream = rq.GetRequestStream())
-                {
-                    writeStream.Write(bytes, 0, bytes.Length);
-                }
-
-                using (HttpWebResponse resp = (HttpWebResponse)rq.GetResponse())
-                {
-                    string responseValue = string.Empty;
-
-					if (resp.StatusCode == HttpStatusCode.NoContent)
-					{
-						DataSnapshot snapshot = new DataSnapshot();
-						if (OnUpdateSuccess != null) OnUpdateSuccess(this, snapshot);
-						return;
-					}
-
-                    if (resp.StatusCode != HttpStatusCode.OK)
-                    {
-						if (OnUpdateFailed != null) OnUpdateFailed(this, FirebaseError.Create(resp.StatusCode));
-                        return;
-                    }
-
-                    using (Stream responseStream = resp.GetResponseStream())
-                    {
-                        if (responseStream != null)
-                            using (StreamReader rdr = new StreamReader(responseStream))
-                            {
-                                responseValue = rdr.ReadToEnd();
-                            }
-                    }
-
-                    if (responseValue != "")
-                    {
-                        DataSnapshot snapshot = new DataSnapshot(responseValue);
-                        if (OnUpdateSuccess != null) OnUpdateSuccess(this, snapshot);
-                    }
-                    else
-                    {
-						if (OnUpdateFailed != null) OnUpdateFailed(this, new FirebaseError(resp.StatusCode, "No response received."));
-                    }
-                }
-
+                root.StartCoroutine(RequestCoroutine(url, bytes, headers, OnSetSuccess, OnSetFailed));
             }
-			catch (WebException webEx) 
-			{
-				if (OnUpdateFailed != null) OnUpdateFailed(this, FirebaseError.Create(webEx));
-			}
+            catch (WebException webEx)
+            {
+                if (OnSetFailed != null) OnSetFailed(this, FirebaseError.Create(webEx));
+            }
+            catch (Exception ex)
+            {
+                if (OnSetFailed != null) OnSetFailed(this, new FirebaseError(ex.Message));
+            }
+
+        }
+
+        /// <summary>
+        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnSetFailed action contains the error exception
+        /// </summary>
+        /// <param name="json">String</param>
+        /// <param name="isJson">True if string is json (necessary to differentiate the other overloading)</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <returns></returns>
+        public void SetValue(string json, bool isJson, FirebaseParam query)
+        {
+            if (!isJson)
+                SetValue(json, query.Parameter);
+            else
+                SetValue(Json.Deserialize(json), query.Parameter);
+        }
+
+        /// <summary>
+        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnSetFailed action contains the error exception
+        /// </summary>
+        /// <param name="_val">Update value</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <returns></returns>
+        public void SetValue(object _val, FirebaseParam query)
+        {
+            SetValue(_val, query.Parameter);
+        }
+
+
+
+        /// <summary>
+        /// Update value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnUpdateFailed action contains the error exception
+        /// </summary>
+        /// <param name="_val">Set value</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        /// <returns></returns>
+        public void UpdateValue(object _val, string param = "")
+        {
+            try
+            {
+                if (!(_val is Dictionary<string, object>))
+                {
+                    if (OnUpdateFailed != null)
+                        OnUpdateFailed(this, new FirebaseError((HttpStatusCode)400, "Invalid data; couldn't parse JSON object. Are you sending a JSON object with valid key names?"));
+
+                    return;
+                }
+
+                if (Credential != "")
+                {
+                    param = (new FirebaseParam(param).Auth(Credential)).Parameter;
+                }
+
+                string url = Endpoint;
+
+                param = WWW.EscapeURL(param);
+
+                if (param != string.Empty)
+                    url += "?" + param;
+
+                Dictionary<string, string> headers = new Dictionary<string, string>();
+                headers.Add("Content-Type", "application/json");
+                headers.Add("X-HTTP-Method-Override", "PATCH");
+
+                //UTF8Encoding encoding = new UTF8Encoding();
+                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(Json.Serialize(_val));
+
+                root.StartCoroutine(RequestCoroutine(url, bytes, headers, OnUpdateSuccess, OnUpdateFailed));
+            }
+            catch (WebException webEx)
+            {
+                if (OnUpdateFailed != null) OnUpdateFailed(this, FirebaseError.Create(webEx));
+            }
             catch (Exception ex)
             {
                 if (OnUpdateFailed != null) OnUpdateFailed(this, new FirebaseError(ex.Message));
@@ -451,12 +483,12 @@ namespace FirebaseCSharp
         /// <param name="isJson">True if string is json (necessary to differentiate the other overloading)</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void SetValue(string json, bool isJson, FirebaseParam query)
+        public void UpdateValue(string json, bool isJson, FirebaseParam query)
         {
             if (!isJson)
-                SetValue(json, query.Parameter);
+                UpdateValue(json, query.Parameter);
             else
-                SetValue(Json.Deserialize(json), query.Parameter);
+                UpdateValue(Json.Deserialize(json), query.Parameter);
         }
 
         /// <summary>
@@ -467,9 +499,9 @@ namespace FirebaseCSharp
         /// <param name="_val">Update value</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void SetValue(object _val, FirebaseParam query)
+        public void UpdateValue(object _val, FirebaseParam query)
         {
-            SetValue(_val, query.Parameter);
+            UpdateValue(_val, query.Parameter);
         }
 
         /// <summary>
@@ -508,77 +540,21 @@ namespace FirebaseCSharp
 
                 string url = Endpoint;
 
+                param = WWW.EscapeURL(param);
+
                 if (param != string.Empty)
                     url += "?" + param;
 
-                HttpWebRequest rq = (HttpWebRequest)WebRequest.Create(url);
-
-                FieldInfo headersFieldInfo = rq.GetType().GetField("webHeaders", System.Reflection.BindingFlags.NonPublic
-                    | System.Reflection.BindingFlags.Instance
-                    | System.Reflection.BindingFlags.GetField);
-
-                CusteredHeaderCollection WssHeaders = new CusteredHeaderCollection(Host);
-
-                headersFieldInfo.SetValue(rq, WssHeaders);
-
-                rq.Proxy = null;
-
-                rq.Method = "POST";
-                rq.ContentLength = 0;
-                rq.ContentType = "application/json";
 
                 //UTF8Encoding encoding = new UTF8Encoding();
                 byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(Json.Serialize(_val));
-                rq.ContentLength = bytes.Length;
 
-                using (Stream writeStream = rq.GetRequestStream())
-                {
-                    writeStream.Write(bytes, 0, bytes.Length);
-                }
-
-
-                using (HttpWebResponse resp = (HttpWebResponse)rq.GetResponse())
-                {
-                    string responseValue = string.Empty;
-
-					if (resp.StatusCode == HttpStatusCode.NoContent)
-					{
-						DataSnapshot snapshot = new DataSnapshot();
-						if (OnPushSuccess != null) OnPushSuccess(this, snapshot);
-						return;
-					}
-
-                    if (resp.StatusCode != HttpStatusCode.OK)
-                    {
-						if (OnPushFailed != null) OnPushFailed(this, FirebaseError.Create(resp.StatusCode));
-                        return;
-                    }
-
-                    using (Stream responseStream = resp.GetResponseStream())
-                    {
-                        if (responseStream != null)
-                            using (StreamReader rdr = new StreamReader(responseStream))
-                            {
-                                responseValue = rdr.ReadToEnd();
-                            }
-                    }
-
-                    if (responseValue != "")
-                    {
-                        DataSnapshot snapshot = new DataSnapshot(responseValue);
-                        if (OnPushSuccess != null) OnPushSuccess(this, snapshot);
-                    }
-                    else
-                    {
-						if (OnPushFailed != null) OnPushFailed(this, new FirebaseError(resp.StatusCode, "No response received."));
-                    }
-
-                }
+                root.StartCoroutine(RequestCoroutine(url, bytes, null, OnPushSuccess, OnPushFailed));
             }
-			catch (WebException webEx) 
-			{
-				if (OnPushFailed != null) OnPushFailed(this, FirebaseError.Create(webEx));
-			}
+            catch (WebException webEx)
+            {
+                if (OnPushFailed != null) OnPushFailed(this, FirebaseError.Create(webEx));
+            }
             catch (Exception ex)
             {
                 if (OnPushFailed != null) OnPushFailed(this, new FirebaseError(ex.Message));
@@ -633,66 +609,25 @@ namespace FirebaseCSharp
 
                 string url = Endpoint;
 
+                param = WWW.EscapeURL(param);
+
                 if (param != string.Empty)
                     url += "?" + param;
 
-                HttpWebRequest rq = (HttpWebRequest)WebRequest.Create(url);
+                Dictionary<string, string> headers = new Dictionary<string, string>();
+                headers.Add("Content-Type", "application/json");
+                headers.Add("X-HTTP-Method-Override", "DELETE");
 
-                FieldInfo headersFieldInfo = rq.GetType().GetField("webHeaders", System.Reflection.BindingFlags.NonPublic
-                    | System.Reflection.BindingFlags.Instance
-                    | System.Reflection.BindingFlags.GetField);
+                //UTF8Encoding encoding = new UTF8Encoding();
+                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes("{ \"dummy\" : \"dummies\"}");
 
-                CusteredHeaderCollection WssHeaders = new CusteredHeaderCollection(Host);
+                root.StartCoroutine(RequestCoroutine(url, bytes, headers, OnDeleteSuccess, OnDeleteFailed));
 
-                headersFieldInfo.SetValue(rq, WssHeaders);
-
-                rq.Proxy = null;
-
-                rq.Method = "DELETE";
-                rq.ContentLength = 0;
-                rq.ContentType = "application/json";
-
-                using (HttpWebResponse resp = (HttpWebResponse)rq.GetResponse())
-                {
-                    string responseValue = string.Empty;
-
-					if (resp.StatusCode == HttpStatusCode.NoContent)
-					{
-						DataSnapshot snapshot = new DataSnapshot();
-						if (OnDeleteSuccess != null) OnDeleteSuccess(this, snapshot);
-						return;
-					}
-
-                    if (resp.StatusCode != HttpStatusCode.OK)
-                    {
-						if (OnDeleteFailed != null) OnDeleteFailed(this, FirebaseError.Create(resp.StatusCode));
-                        return;
-                    }
-
-                    using (Stream responseStream = resp.GetResponseStream())
-                    {
-                        if (responseStream != null)
-                            using (StreamReader rdr = new StreamReader(responseStream))
-                            {
-                                responseValue = rdr.ReadToEnd();
-                            }
-                    }
-
-                    if (responseValue != "")
-                    {
-                        DataSnapshot snapshot = new DataSnapshot(responseValue);
-                        if (OnDeleteSuccess != null) OnDeleteSuccess(this, snapshot);
-                    }
-                    else
-                    {
-						if (OnDeleteFailed != null) OnDeleteFailed(this, new FirebaseError(resp.StatusCode, "No response received."));
-                    }
-                }
             }
-			catch (WebException webEx) 
-			{
-				if (OnDeleteFailed != null) OnDeleteFailed(this, FirebaseError.Create(webEx));
-			}
+            catch (WebException webEx)
+            {
+                if (OnDeleteFailed != null) OnDeleteFailed(this, FirebaseError.Create(webEx));
+            }
             catch (Exception ex)
             {
                 if (OnDeleteFailed != null) OnDeleteFailed(this, new FirebaseError(ex.Message));
@@ -711,76 +646,216 @@ namespace FirebaseCSharp
             Delete(query.Parameter);
         }
 
-        /**** TO COROUTINE WRAPPERS ****/
 
         /// <summary>
-        /// Wraps function to IEnumerator
+        /// Sets the time stamp with the time since UNIX epoch by server value (in milliseconds).
         /// </summary>
-        /// <param name="action">Firebase method</param>
-        /// <returns></returns>
-        public static IEnumerator ToCoroutine(Action<FirebaseParam> action, FirebaseParam query)
+        /// <param name="keyName">Key name.</param>
+        public void SetTimeStamp(string keyName)
         {
-            action(query);
-            yield return null;
+            Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, true);
         }
 
         /// <summary>
-        /// Wraps function to IEnumerator
+        /// Sets the time stamp with the time since UNIX epoch by server value (in milliseconds).
         /// </summary>
-        /// <param name="action">Firebase method</param>
-        /// <returns></returns>
-        public static IEnumerator ToCoroutine(Action<string> action, string param = "")
+        /// <param name="keyName">Key name.</param>
+        /// <param name="OnSuccess">On success callback.</param>
+        /// <param name="OnFailed">On fail callback.</param>
+        public void SetTimeStamp(string keyName, Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed)
         {
-            action(param);
-            yield return null;
+            Firebase temp = Child(keyName);
+            temp.OnSetSuccess += OnSuccess;
+            temp.OnSetFailed += OnFailed;
+
+            temp.SetValue(SERVER_VALUE_TIMESTAMP, true);
+        }
+
+
+        /// <summary>
+        /// Gets Firebase Rules. Returned value is treated the same as returned value on Get request, packaged in DataSnapshot. Please note that FIREBASE_SECRET is required. If secret parameter is not set, it will use the Credential that has been set when CreateNew called.
+        /// </summary>
+        /// <param name="OnSuccess">On success callback.</param>
+        /// <param name="OnFailed">On failed callback.</param>
+        /// <param name="secret">Firebase Secret.</param>
+        public void GetRules(Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, string secret = "")
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(secret))
+                {
+                    if (!string.IsNullOrEmpty(Credential))
+                        secret = Credential;
+                }
+
+                string url = RulesEndpoint;
+
+                url += "?auth=" + secret;
+
+                root.StartCoroutine(RequestCoroutine(url, null, null, OnSuccess, OnFailed));
+            }
+            catch (WebException webEx)
+            {
+                if (OnFailed != null) OnFailed(this, FirebaseError.Create(webEx));
+            }
+            catch (Exception ex)
+            {
+                if (OnFailed != null) OnFailed(this, new FirebaseError(ex.Message));
+            }
         }
 
         /// <summary>
-        /// Wraps function to IEnumerator
+        /// Sets Firebase Rules. Returned value is treated the same as returned value on Set request, packaged in DataSnapshot.Please note that FIREBASE_SECRET is required. If secret parameter is not set, it will use the Credential that has been set when CreateNew called.
         /// </summary>
-        /// <param name="action">Firebase method</param>
-        /// <returns></returns>
-        public static IEnumerator ToCoroutine(Action<object, FirebaseParam> action, object obj, FirebaseParam query)
+        /// <param name="json">Valid rules Json.</param>
+        /// <param name="OnSuccess">On success callback.</param>
+        /// <param name="OnFailed">On failed callback.</param>
+        /// <param name="secret">Firebase Secret.</param>
+        public void SetRules(string json, Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, string secret = "")
         {
-            action(obj, query);
-            yield return null;
+            try
+            {
+                if (string.IsNullOrEmpty(secret))
+                {
+                    if (!string.IsNullOrEmpty(Credential))
+                        secret = Credential;
+                }
+
+                string url = RulesEndpoint;
+
+                url += "?auth=" + secret;
+
+                Dictionary<string, string> headers = new Dictionary<string, string>();
+                headers.Add("Content-Type", "application/json");
+                headers.Add("X-HTTP-Method-Override", "PUT");
+
+                //UTF8Encoding encoding = new UTF8Encoding();
+                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(json);
+
+                root.StartCoroutine(RequestCoroutine(url, bytes, headers, OnSuccess, OnFailed));
+            }
+            catch (WebException webEx)
+            {
+                if (OnFailed != null) OnFailed(this, FirebaseError.Create(webEx));
+            }
+            catch (Exception ex)
+            {
+                if (OnFailed != null) OnFailed(this, new FirebaseError(ex.Message));
+            }
         }
 
         /// <summary>
-        /// Wraps function to IEnumerator
+        /// Sets Firebase Rules silently. Please note that FIREBASE_SECRET is required. If secret parameter is not set, it will use the Credential that has been set when CreateNew called.
         /// </summary>
-        /// <param name="action">Firebase method</param>
-        /// <returns></returns>
-        public static IEnumerator ToCoroutine(Action<object, string> action, object obj, string param = "")
+        /// <param name="json">Valid rules Json.</param>
+        /// <param name="secret">Firebase Secret.</param>
+        public void SetRules(string json, string secret = "")
         {
-            action(obj, param);
-            yield return null;
+            SetRules(json, null, null, secret);
         }
 
         /// <summary>
-        /// Wraps function to IEnumerator
+        /// Sets Firebase Rules silently. Please note that FIREBASE_SECRET is required. If secret parameter is not set, it will use the Credential that has been set when CreateNew called.Sets the rules.
         /// </summary>
-        /// <param name="action">Firebase method</param>
-        /// <returns></returns>
-        public static IEnumerator ToCoroutine(Action<string, bool, FirebaseParam> action, string json, bool isJson, FirebaseParam query)
+        /// <param name="rules">Valid rules that could be serialized into json.</param>
+        /// <param name="OnSuccess">On success.</param>
+        /// <param name="OnFailed">On failed.</param>
+        /// <param name="secret">Firebase Secret.</param>
+        public void SetRules(Dictionary<string, object> rules, Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, string secret = "")
         {
-            action(json, isJson, query);
-            yield return null;
+            SetRules(Json.Serialize(rules), OnSuccess, OnFailed, secret);
         }
 
         /// <summary>
-        /// Wraps function to IEnumerator
+        /// Sets Firebase Rules silently. Please note that FIREBASE_SECRET is required. If secret parameter is not set, it will use the Credential that has been set when CreateNew called.Sets the rules.
         /// </summary>
-        /// <param name="action">Firebase method</param>
-        /// <returns></returns>
-        public static IEnumerator ToCoroutine(Action<string, bool, string> action, string json, bool isJson, string param = "")
+        /// <param name="rules">Valid rules that could be serialized into json.</param>
+        /// <param name="secret">Firebase Secret.</param>
+        public void SetRules(Dictionary<string, object> rules, string secret = "")
         {
-            action(json, isJson, param);
-            yield return null; ;
+            SetRules(Json.Serialize(rules), null, null, secret);
         }
 
+        #endregion
 
-        /**** STATIC FUNCTIONS ****/
+        #region REQUEST COROUTINE
+
+        protected IEnumerator RequestCoroutine(string url, byte[] postData, Dictionary<string, string> headers, Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed)
+        {
+            using (WWW www = (headers != null) ? new WWW(url, postData, headers) : (postData != null) ? new WWW(url, postData) : new WWW(url))
+            {
+                // Wait until load done
+                yield return www;
+
+                if (!string.IsNullOrEmpty(www.error))
+                {
+
+                    HttpStatusCode status = 0;
+                    string errMessage = "";
+
+                    // Parse status code
+                    if (www.responseHeaders.ContainsKey("STATUS"))
+                    {
+                        string str = www.responseHeaders["STATUS"] as string;
+                        string[] components = str.Split(' ');
+                        int code = 0;
+                        if (components.Length >= 3 && int.TryParse(components[1], out code))
+                            status = (HttpStatusCode)code;
+                    }
+
+                    if (www.error.Contains("crossdomain.xml") || www.error.Contains("Couldn't resolve"))
+                    {
+                        errMessage = "No internet connection or crossdomain.xml policy problem";
+                    }
+                    else {
+
+                        // Parse error message
+
+                        try
+                        {
+                            if (!string.IsNullOrEmpty(www.text))
+                            {
+                                Dictionary<string, object> obj = Json.Deserialize(www.text) as Dictionary<string, object>;
+
+                                if (obj != null && obj.ContainsKey("error"))
+                                    errMessage = obj["error"] as string;
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+
+
+                    if (OnFailed != null)
+                    {
+                        if (string.IsNullOrEmpty(errMessage))
+                            errMessage = www.error;
+
+                        if (errMessage.Contains("Failed downloading"))
+                        {
+                            errMessage = "Request failed with no info of error.";
+                        }
+
+                        OnFailed(this, new FirebaseError(status, errMessage));
+                    }
+
+#if UNITY_EDITOR
+                    Debug.LogWarning(www.error + " (" + (int)status + ")\nResponse Message: " + errMessage);
+#endif
+                }
+                else
+                {
+                    DataSnapshot snapshot = new DataSnapshot(www.text);
+                    if (OnSuccess != null) OnSuccess(this, snapshot);
+                }
+            }
+        }
+
+#endregion
+
+#region STATIC FUNCTIONS
 
         /// <summary>
         /// Creates new Firebase pointer at a valid Firebase url
@@ -793,33 +868,19 @@ namespace FirebaseCSharp
             return new FirebaseRoot(host, credential);
         }
 
-        /**** SPECIAL CLASS ****/
-
-        private class CusteredHeaderCollection : WebHeaderCollection
+        /// <summary>
+        /// Converts unix time stamp into DateTime
+        /// </summary>
+        /// <returns>The stamp to date time.</returns>
+        /// <param name="unixTimeStamp">Unix time stamp.</param>
+        public static DateTime TimeStampToDateTime(long unixTimeStamp)
         {
-            public bool HostHeaderValueReplaced { get; private set; }
-
-            public string ClusterUrl { get; private set; }
-
-            public CusteredHeaderCollection(string commonClusterUrl) : base()
-            {
-                if (string.IsNullOrEmpty("commonClusterUrl"))
-                    throw new ArgumentNullException("commonClusterUrl");
-
-                this.ClusterUrl = commonClusterUrl;
-            }
-
-            public override string ToString()
-            {
-                this["Host"] = this.ClusterUrl;
-                string tmp = base.ToString();
-                this.HostHeaderValueReplaced = true;
-
-                return tmp;
-            }
-
+            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dateTime = dateTime.AddMilliseconds(unixTimeStamp).ToLocalTime();
+            return dateTime;
         }
 
+#endregion
 
     }
 }

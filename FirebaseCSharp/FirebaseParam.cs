@@ -30,7 +30,9 @@ Copyright (c) 2016  M Dikra Prasetya
 
 */
 
-namespace FirebaseCSharp
+using UnityEngine;
+
+namespace SimpleFirebaseUnity
 {
 	public struct FirebaseParam
 	{
@@ -46,6 +48,17 @@ namespace FirebaseCSharp
 				return param;
 			}
 		}
+
+        /// <summary>
+        /// Created parameter for REST API call with the symbols encoded to url-safe escape characters.
+        /// </summary>
+        public string SafeParameter
+        {
+            get
+            {
+                return WWW.EscapeURL(param);
+            }
+        }
 
 		/// <summary>
 		/// Create new FirebaseQuery

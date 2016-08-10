@@ -33,14 +33,15 @@ Copyright (c) 2016  M Dikra Prasetya
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using System.Net;
+using System.Collections;
 
-namespace FirebaseCSharp
+namespace SimpleFirebaseUnity
 {
     internal class FirebaseRoot : Firebase
     {
-        private static bool firstTimeInitiated = true;
-        private string host;
-        private string cred;
+		protected static bool firstTimeInitiated = true;
+		protected string host;
+		protected string cred;
 
         /// <summary>
         /// Returns .json endpoint to this Firebase point
@@ -69,7 +70,31 @@ namespace FirebaseCSharp
             }
         }
 
-        public FirebaseRoot(string _host, string _cred = "")
+		/// <summary>
+		/// Returns .json endpoint to Firebase Rules.
+		/// </summary>
+		public override string RulesEndpoint
+		{
+			get 
+			{
+				return "https://" + root.Host + "/.settings/rules.json";
+			}
+		}
+
+		/// <summary>
+		/// Copy this instance.
+		/// </summary>
+		public FirebaseRoot Copy()
+		{
+			return new FirebaseRoot (host, cred);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SimpleFirebaseUnity.FirebaseRoot"/> class.
+		/// </summary>
+		/// <param name="_host">Host.</param>
+		/// <param name="_cred">Cred.</param>
+		public FirebaseRoot(string _host, string _cred = "")
         {
             if (firstTimeInitiated)
             {
@@ -81,7 +106,6 @@ namespace FirebaseCSharp
             host = _host;
             cred = _cred;
         }
-
 
         /// <summary>
         /// Returns main host of Firebase
@@ -98,5 +122,23 @@ namespace FirebaseCSharp
         {
             return true; // override certificate, we trust Firebase :D
         }
+
+		/// <summary>
+		/// Starts the coroutine.
+		/// </summary>
+		/// <param name="routine">Routine.</param>
+		public void StartCoroutine(IEnumerator routine)
+		{
+			FirebaseManager.Instance.StartCoroutine (routine);
+		}
+
+		/// <summary>
+		/// Stops the coroutine.
+		/// </summary>
+		/// <param name="routine">Routine.</param>
+		public void StopCoroutine(IEnumerator routine)
+		{
+			FirebaseManager.Instance.StopCoroutine (routine);
+		}
     }
 }

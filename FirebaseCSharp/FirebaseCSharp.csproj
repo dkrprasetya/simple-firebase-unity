@@ -36,12 +36,18 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\Plugins\UnityEngine.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataSnapshot.cs" />
     <Compile Include="Firebase.cs" />
     <Compile Include="FirebaseError.cs" />
+    <Compile Include="FirebaseManager.cs" />
+    <Compile Include="FirebaseObserver.cs" />
     <Compile Include="FirebaseParam.cs" />
+    <Compile Include="FirebaseQueue.cs" />
     <Compile Include="FirebaseRoot.cs" />
     <Compile Include="miniJSON.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

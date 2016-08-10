@@ -33,7 +33,7 @@ Copyright (c) 2016  M Dikra Prasetya
 using System;
 using System.Net;
 
-namespace FirebaseCSharp
+namespace SimpleFirebaseUnity
 {
     public class FirebaseError : Exception
     {
@@ -113,8 +113,7 @@ namespace FirebaseCSharp
 
 			return new FirebaseError(status, message, webEx);
 		}
-
-
+			
 		/// <summary>
 		/// Create the FirebaseError initialized based on the given http status code.
 		/// </summary>
