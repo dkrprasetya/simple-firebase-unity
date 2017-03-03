@@ -36,18 +36,18 @@ using System;
 
 namespace SimpleFirebaseUnity
 {
-	public class FirebaseObserver  {
+	public class SimpleFirebaseObserver  {
 
-		public Action<Firebase, DataSnapshot> OnChange; 
+		public Action<SimpleFirebase, SimpleDataSnapshot> OnChange; 
 
-		protected Firebase firebase;
-		protected Firebase target;
+		protected SimpleFirebase firebase;
+		protected SimpleFirebase target;
 		protected float refreshRate;
 		protected string getParam;
 		protected bool active;
 
 		protected bool firstTime;
-		protected DataSnapshot lastSnapshot;
+		protected SimpleDataSnapshot lastSnapshot;
 
 		protected IEnumerator routine;
 
@@ -60,7 +60,7 @@ namespace SimpleFirebaseUnity
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="refreshRate">Refresh rate (in seconds).</param>
 		/// <param name="getParam">Parameter value for the Get request that will be called periodically.</param>
-		public FirebaseObserver(Firebase _firebase, float _refreshRate, string _getParam = "")
+		public SimpleFirebaseObserver(SimpleFirebase _firebase, float _refreshRate, string _getParam = "")
 		{
 			active = false;
 			lastSnapshot = null;
@@ -77,7 +77,7 @@ namespace SimpleFirebaseUnity
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="refreshRate">Refresh rate (in seconds).</param>
 		/// <param name="getParam">Parameter value for the Get request that will be called periodically.</param>
-		public FirebaseObserver(Firebase _firebase, float _refreshRate, FirebaseParam _getParam)
+		public SimpleFirebaseObserver(SimpleFirebase _firebase, float _refreshRate, SimpleFirebaseParam _getParam)
 		{
 			active = false;
 			lastSnapshot = null;
@@ -134,7 +134,7 @@ namespace SimpleFirebaseUnity
 			}
 		}
 
-		void CompareSnapshot(Firebase target, DataSnapshot snapshot)
+		void CompareSnapshot(SimpleFirebase target, SimpleDataSnapshot snapshot)
 		{
 			if (firstTime) {
 				firstTime = false;

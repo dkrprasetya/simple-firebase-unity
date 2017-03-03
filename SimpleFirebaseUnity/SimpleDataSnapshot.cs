@@ -37,14 +37,14 @@ namespace SimpleFirebaseUnity
 {
 	using MiniJSON;
 
-    public class DataSnapshot
+    public class SimpleDataSnapshot
     {
         protected object val_obj;
         protected Dictionary<string, object> val_dict;
         protected List<string> keys;
         protected string json;
 
-        protected DataSnapshot()
+        protected SimpleDataSnapshot()
         {
             val_dict = null;
             val_obj = null;
@@ -56,7 +56,7 @@ namespace SimpleFirebaseUnity
         /// Creates snapshot from Json string 
         /// </summary>
         /// <param name="json">Json string</param>
-        public DataSnapshot(string _json = "")
+        public SimpleDataSnapshot(string _json = "")
         {
 			object obj = (_json != null && _json.Length > 0)?Json.Deserialize(_json):null;
 
