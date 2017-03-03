@@ -36,7 +36,7 @@ namespace SimpleFirebaseUnity
 {
 	using MiniJSON;
 
-	public class FirebaseQueue {
+	public class SimpleFirebaseQueue {
 
 		#region FIREBASE COMMAND QUEUE
 
@@ -52,13 +52,13 @@ namespace SimpleFirebaseUnity
 		}
 
 		protected class CommandLinkedList {
-			public Firebase firebase;
+			public SimpleFirebase firebase;
 			FirebaseCommand command;
 			string param;
 			object obj;
 			public CommandLinkedList next;
 
-			public CommandLinkedList(Firebase _firebase, FirebaseCommand _command, string _param, object _obj = null){
+			public CommandLinkedList(SimpleFirebase _firebase, FirebaseCommand _command, string _param, object _obj = null){
 				firebase = _firebase;
 				command = _command;
 				param = _param;
@@ -66,7 +66,7 @@ namespace SimpleFirebaseUnity
 				next = null;
 			}
 
-			public CommandLinkedList(Firebase _firebase, FirebaseCommand _command, FirebaseParam firebaseParam, object _obj = null){
+			public CommandLinkedList(SimpleFirebase _firebase, FirebaseCommand _command, SimpleFirebaseParam firebaseParam, object _obj = null){
 				firebase = _firebase;
 				command = _command;
 				param = firebaseParam.Parameter;
@@ -107,7 +107,7 @@ namespace SimpleFirebaseUnity
 		protected bool autoStart;
 		protected int count;
 
-		protected void AddQueue(Firebase firebase, FirebaseCommand command, string param, object obj = null)
+		protected void AddQueue(SimpleFirebase firebase, FirebaseCommand command, string param, object obj = null)
 		{
 			CommandLinkedList commandNode =  new CommandLinkedList (firebase, command, param, obj);
 
@@ -144,21 +144,21 @@ namespace SimpleFirebaseUnity
 			}
 		}
 
-		protected void OnSuccess(Firebase sender, DataSnapshot snapshot)
+		protected void OnSuccess(SimpleFirebase sender, SimpleDataSnapshot snapshot)
 		{
 			--count;
 			StartNextCommand ();
 			ClearCallbacks (sender);
 		}
 
-		protected void OnFailed(Firebase sender, FirebaseError err)
+		protected void OnFailed(SimpleFirebase sender, SimpleFirebaseError err)
 		{
 			--count;
 			StartNextCommand ();
 			ClearCallbacks (sender);
 		}
 
-		protected void ClearCallbacks(Firebase sender)
+		protected void ClearCallbacks(SimpleFirebase sender)
 		{
 			sender.OnGetSuccess -= OnSuccess;
 			sender.OnGetFailed -= OnFailed;
@@ -178,7 +178,7 @@ namespace SimpleFirebaseUnity
 		/// Initializes a new instance of the <see cref="SimpleFirebaseUnity.FirebaseQueueManager"/> class.
 		/// </summary>
 		/// <param name="_autoStart">If set to <c>true</c> auto start when a queue added.</param>
-		public FirebaseQueue(bool _autoStart = true)
+		public SimpleFirebaseQueue(bool _autoStart = true)
 		{
 			autoStart = _autoStart;
 			count = 0;
@@ -209,9 +209,9 @@ namespace SimpleFirebaseUnity
 		/// </summary>
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueGet(Firebase firebase, string param = "")
+		public void AddQueueGet(SimpleFirebase firebase, string param = "")
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnGetSuccess += OnSuccess;
 			temp.OnGetFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Get, param);
@@ -222,9 +222,9 @@ namespace SimpleFirebaseUnity
 		/// </summary>
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueGet(Firebase firebase, FirebaseParam param)
+		public void AddQueueGet(SimpleFirebase firebase, SimpleFirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnGetSuccess += OnSuccess;
 			temp.OnGetFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Get, param.Parameter);
@@ -237,9 +237,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="val">Value.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueSet(Firebase firebase, object val, string param = "")
+		public void AddQueueSet(SimpleFirebase firebase, object val, string param = "")
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnSetSuccess += OnSuccess;
 			temp.OnSetFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Set, param, val);
@@ -251,9 +251,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="val">Value.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueSet(Firebase firebase, object val, FirebaseParam param)
+		public void AddQueueSet(SimpleFirebase firebase, object val, SimpleFirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnSetSuccess += OnSuccess;
 			temp.OnSetFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Set, param.Parameter, val);
@@ -266,9 +266,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="json">Json.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueSet(Firebase firebase, string json, bool isJson, string param = "")
+		public void AddQueueSet(SimpleFirebase firebase, string json, bool isJson, string param = "")
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnSetSuccess += OnSuccess;
 			temp.OnSetFailed += OnFailed;
 			if (!isJson)
@@ -284,9 +284,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="json">Json.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueSet(Firebase firebase, string json, bool isJson, FirebaseParam param)
+		public void AddQueueSet(SimpleFirebase firebase, string json, bool isJson, SimpleFirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnSetSuccess += OnSuccess;
 			temp.OnSetFailed += OnFailed;
 			if (!isJson)
@@ -301,7 +301,7 @@ namespace SimpleFirebaseUnity
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="val">Value.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueUpdate(Firebase firebase, object val, string param = "")
+		public void AddQueueUpdate(SimpleFirebase firebase, object val, string param = "")
 		{
 			firebase.OnUpdateSuccess += OnSuccess;
 			firebase.OnUpdateFailed += OnFailed;
@@ -314,9 +314,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="val">Value.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueUpdate(Firebase firebase, object val, FirebaseParam param)
+		public void AddQueueUpdate(SimpleFirebase firebase, object val, SimpleFirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnUpdateSuccess += OnSuccess;
 			temp.OnUpdateFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Update, param.Parameter, val);
@@ -329,9 +329,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="json">Json.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueUpdate(Firebase firebase, string json, bool isJson, string param = "")
+		public void AddQueueUpdate(SimpleFirebase firebase, string json, bool isJson, string param = "")
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnUpdateSuccess += OnSuccess;
 			temp.OnUpdateFailed += OnFailed;
 			if (!isJson)
@@ -347,9 +347,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="json">Json.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueUpdate(Firebase firebase, string json, bool isJson, FirebaseParam param)
+		public void AddQueueUpdate(SimpleFirebase firebase, string json, bool isJson, SimpleFirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnUpdateSuccess += OnSuccess;
 			temp.OnUpdateFailed += OnFailed;
 			if (!isJson)
@@ -364,9 +364,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="val">Value.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueuePush(Firebase firebase, object val, string param = "")
+		public void AddQueuePush(SimpleFirebase firebase, object val, string param = "")
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnPushSuccess += OnSuccess;
 			temp.OnPushFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Push, param, val);
@@ -378,9 +378,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="val">Value.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueuePush(Firebase firebase, object val, FirebaseParam param)
+		public void AddQueuePush(SimpleFirebase firebase, object val, SimpleFirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnPushSuccess += OnSuccess;
 			temp.OnPushFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Push, param.Parameter, val);
@@ -393,9 +393,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="json">Json.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueuePush(Firebase firebase, string json, bool isJson, string param = "")
+		public void AddQueuePush(SimpleFirebase firebase, string json, bool isJson, string param = "")
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnPushSuccess += OnSuccess;
 			temp.OnPushFailed += OnFailed;
 			if (!isJson)
@@ -411,9 +411,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="json">Json.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueuePush(Firebase firebase, string json, bool isJson, FirebaseParam param)
+		public void AddQueuePush(SimpleFirebase firebase, string json, bool isJson, SimpleFirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnPushSuccess += OnSuccess;
 			temp.OnPushFailed += OnFailed;
 			if (!isJson)
@@ -427,9 +427,9 @@ namespace SimpleFirebaseUnity
 		/// </summary>
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueDelete(Firebase firebase, string param = "")
+		public void AddQueueDelete(SimpleFirebase firebase, string param = "")
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnDeleteSuccess += OnSuccess;
 			temp.OnDeleteFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Delete, param);
@@ -440,9 +440,9 @@ namespace SimpleFirebaseUnity
 		/// </summary>
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueDelete(Firebase firebase, FirebaseParam param)
+		public void AddQueueDelete(SimpleFirebase firebase, SimpleFirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
+			SimpleFirebase temp = firebase.Copy (true);
 			temp.OnDeleteSuccess += OnSuccess;
 			temp.OnDeleteFailed += OnFailed;
 			AddQueue (temp, FirebaseCommand.Delete, param.Parameter);
@@ -453,9 +453,9 @@ namespace SimpleFirebaseUnity
 		/// </summary>
 		/// <param name="firebase">Firebase.</param>
 		/// <param name="keyName">Time stamp key name.</param>
-		public void AddQueueSetTimeStamp(Firebase firebase, string keyName)
+		public void AddQueueSetTimeStamp(SimpleFirebase firebase, string keyName)
 		{
-			Firebase temp = firebase.Child (keyName, false);
+			SimpleFirebase temp = firebase.Child (keyName, false);
 			AddQueueSet (temp, SERVER_VALUE_TIMESTAMP, true, "print=silent");
 		}
 
@@ -466,9 +466,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="keyName">Key name.</param>
 		/// <param name="_OnSuccess">On success callback.</param>
 		/// <param name="_OnFailed">On fail callback.</param>
-		public void AddQueueSetTimeStamp(Firebase firebase, string keyName, Action<Firebase, DataSnapshot> _OnSuccess, Action<Firebase, FirebaseError> _OnFailed)
+		public void AddQueueSetTimeStamp(SimpleFirebase firebase, string keyName, Action<SimpleFirebase, SimpleDataSnapshot> _OnSuccess, Action<SimpleFirebase, SimpleFirebaseError> _OnFailed)
 		{
-			Firebase temp = firebase.Child (keyName);
+			SimpleFirebase temp = firebase.Child (keyName);
 			temp.OnSetSuccess += _OnSuccess;
 			temp.OnSetFailed += _OnFailed;
 

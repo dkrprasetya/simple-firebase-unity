@@ -41,27 +41,27 @@ namespace SimpleFirebaseUnity
 {
     using MiniJSON;
     [Serializable]
-    public class Firebase
+    public class SimpleFirebase
     {
         const string SERVER_VALUE_TIMESTAMP = "{\".sv\": \"timestamp\"}";
 
-        public Action<Firebase, DataSnapshot> OnGetSuccess;
-        public Action<Firebase, FirebaseError> OnGetFailed;
+        public Action<SimpleFirebase, SimpleDataSnapshot> OnGetSuccess;
+        public Action<SimpleFirebase, SimpleFirebaseError> OnGetFailed;
 
-        public Action<Firebase, DataSnapshot> OnSetSuccess;
-        public Action<Firebase, FirebaseError> OnSetFailed;
+        public Action<SimpleFirebase, SimpleDataSnapshot> OnSetSuccess;
+        public Action<SimpleFirebase, SimpleFirebaseError> OnSetFailed;
 
-        public Action<Firebase, DataSnapshot> OnUpdateSuccess;
-        public Action<Firebase, FirebaseError> OnUpdateFailed;
+        public Action<SimpleFirebase, SimpleDataSnapshot> OnUpdateSuccess;
+        public Action<SimpleFirebase, SimpleFirebaseError> OnUpdateFailed;
 
-        public Action<Firebase, DataSnapshot> OnPushSuccess;
-        public Action<Firebase, FirebaseError> OnPushFailed;
+        public Action<SimpleFirebase, SimpleDataSnapshot> OnPushSuccess;
+        public Action<SimpleFirebase, SimpleFirebaseError> OnPushFailed;
 
-        public Action<Firebase, DataSnapshot> OnDeleteSuccess;
-        public Action<Firebase, FirebaseError> OnDeleteFailed;
+        public Action<SimpleFirebase, SimpleDataSnapshot> OnDeleteSuccess;
+        public Action<SimpleFirebase, SimpleFirebaseError> OnDeleteFailed;
 
-        protected Firebase parent;
-        internal FirebaseRoot root;
+        protected SimpleFirebase parent;
+        internal SimpleFirebaseRoot root;
         protected string key;
         protected string fullKey;
 
@@ -70,7 +70,7 @@ namespace SimpleFirebaseUnity
         /// <summary>
         /// Parent of current firebase pointer
         /// </summary>                 
-        public Firebase Parent
+        public SimpleFirebase Parent
         {
             get
             {
@@ -81,7 +81,7 @@ namespace SimpleFirebaseUnity
         /// <summary>
         /// Root firebase pointer of the endpoint
         /// </summary>
-        public Firebase Root
+        public SimpleFirebase Root
         {
             get
             {
@@ -171,7 +171,7 @@ namespace SimpleFirebaseUnity
         /// <param name="_key">Key under parent Firebase</param>
         /// <param name="_root">Root Firebase pointer</param>
         /// <param name="inheritCallback">If set to <c>true</c> inherit callback.</param>
-        internal Firebase(Firebase _parent, string _key, FirebaseRoot _root, bool inheritCallback = false)
+        internal SimpleFirebase(SimpleFirebase _parent, string _key, SimpleFirebaseRoot _root, bool inheritCallback = false)
         {
             parent = _parent;
             key = _key;
@@ -198,7 +198,7 @@ namespace SimpleFirebaseUnity
             }
         }
 
-        internal Firebase()
+        internal SimpleFirebase()
         {
             parent = null;
             key = string.Empty;
@@ -214,18 +214,18 @@ namespace SimpleFirebaseUnity
         /// </summary>
         /// <param name="_key">A string</param>
         /// <param name="inheritCallback">If set to <c>true</c> inherit callback.</param>
-        public Firebase Child(string _key, bool inheritCallback = false)
+        public SimpleFirebase Child(string _key, bool inheritCallback = false)
         {
-            return new Firebase(this, _key, root, inheritCallback);
+            return new SimpleFirebase(this, _key, root, inheritCallback);
         }
 
         /// <summary>
         /// Get Firebase childs from given keys
         /// </summary>
         /// <param name="_keys">List of string</param>
-        public List<Firebase> Childs(List<string> _keys)
+        public List<SimpleFirebase> Childs(List<string> _keys)
         {
-            List<Firebase> childs = new List<Firebase>();
+            List<SimpleFirebase> childs = new List<SimpleFirebase>();
             foreach (string k in _keys)
                 childs.Add(Child(k));
             return childs;
@@ -235,9 +235,9 @@ namespace SimpleFirebaseUnity
         /// Get Firebase childs from given keys
         /// </summary>
         /// <param name="_keys">Array of string</param>
-        public List<Firebase> Childs(string[] _keys)
+        public List<SimpleFirebase> Childs(string[] _keys)
         {
-            List<Firebase> childs = new List<Firebase>();
+            List<SimpleFirebase> childs = new List<SimpleFirebase>();
             foreach (string k in _keys)
                 childs.Add(Child(k));
 
@@ -248,13 +248,13 @@ namespace SimpleFirebaseUnity
         /// Get a fresh copy of this Firebase object
         /// </summary>
         /// <param name="inheritCallback">If set to <c>true</c> inherit callback.</param>
-        public Firebase Copy(bool inheritCallback = false)
+        public SimpleFirebase Copy(bool inheritCallback = false)
         {
-            Firebase temp;
+            SimpleFirebase temp;
             if (parent == null)
                 temp = root.Copy();
             else
-                temp = new Firebase(parent, key, root);
+                temp = new SimpleFirebase(parent, key, root);
 
             if (inheritCallback)
             {
@@ -288,7 +288,7 @@ namespace SimpleFirebaseUnity
         /// </summary>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void GetValue(FirebaseParam query)
+        public void GetValue(SimpleFirebaseParam query)
         {
             GetValue(query.Parameter);
         }
@@ -306,7 +306,7 @@ namespace SimpleFirebaseUnity
             {
                 if (Credential != "")
                 {
-                    param = (new FirebaseParam(param).Auth(Credential)).Parameter;
+                    param = (new SimpleFirebaseParam(param).Auth(Credential)).Parameter;
                 }
 
                 string url = Endpoint;
@@ -320,11 +320,11 @@ namespace SimpleFirebaseUnity
             }
             catch (WebException webEx)
             {
-                if (OnGetFailed != null) OnGetFailed(this, FirebaseError.Create(webEx));
+                if (OnGetFailed != null) OnGetFailed(this, SimpleFirebaseError.Create(webEx));
             }
             catch (Exception ex)
             {
-                if (OnGetFailed != null) OnGetFailed(this, new FirebaseError(ex.Message));
+                if (OnGetFailed != null) OnGetFailed(this, new SimpleFirebaseError(ex.Message));
             }
 
         }
@@ -360,7 +360,7 @@ namespace SimpleFirebaseUnity
             {
                 if (Credential != "")
                 {
-                    param = (new FirebaseParam(param).Auth(Credential)).Parameter;
+                    param = (new SimpleFirebaseParam(param).Auth(Credential)).Parameter;
                 }
 
                 string url = Endpoint;
@@ -381,11 +381,11 @@ namespace SimpleFirebaseUnity
             }
             catch (WebException webEx)
             {
-                if (OnSetFailed != null) OnSetFailed(this, FirebaseError.Create(webEx));
+                if (OnSetFailed != null) OnSetFailed(this, SimpleFirebaseError.Create(webEx));
             }
             catch (Exception ex)
             {
-                if (OnSetFailed != null) OnSetFailed(this, new FirebaseError(ex.Message));
+                if (OnSetFailed != null) OnSetFailed(this, new SimpleFirebaseError(ex.Message));
             }
 
         }
@@ -399,7 +399,7 @@ namespace SimpleFirebaseUnity
         /// <param name="isJson">True if string is json (necessary to differentiate the other overloading)</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void SetValue(string json, bool isJson, FirebaseParam query)
+        public void SetValue(string json, bool isJson, SimpleFirebaseParam query)
         {
             if (!isJson)
                 SetValue(json, query.Parameter);
@@ -415,7 +415,7 @@ namespace SimpleFirebaseUnity
         /// <param name="_val">Update value</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void SetValue(object _val, FirebaseParam query)
+        public void SetValue(object _val, SimpleFirebaseParam query)
         {
             SetValue(_val, query.Parameter);
         }
@@ -437,14 +437,14 @@ namespace SimpleFirebaseUnity
                 if (!(_val is Dictionary<string, object>))
                 {
                     if (OnUpdateFailed != null)
-                        OnUpdateFailed(this, new FirebaseError((HttpStatusCode)400, "Invalid data; couldn't parse JSON object. Are you sending a JSON object with valid key names?"));
+                        OnUpdateFailed(this, new SimpleFirebaseError((HttpStatusCode)400, "Invalid data; couldn't parse JSON object. Are you sending a JSON object with valid key names?"));
 
                     return;
                 }
 
                 if (Credential != "")
                 {
-                    param = (new FirebaseParam(param).Auth(Credential)).Parameter;
+                    param = (new SimpleFirebaseParam(param).Auth(Credential)).Parameter;
                 }
 
                 string url = Endpoint;
@@ -465,11 +465,11 @@ namespace SimpleFirebaseUnity
             }
             catch (WebException webEx)
             {
-                if (OnUpdateFailed != null) OnUpdateFailed(this, FirebaseError.Create(webEx));
+                if (OnUpdateFailed != null) OnUpdateFailed(this, SimpleFirebaseError.Create(webEx));
             }
             catch (Exception ex)
             {
-                if (OnUpdateFailed != null) OnUpdateFailed(this, new FirebaseError(ex.Message));
+                if (OnUpdateFailed != null) OnUpdateFailed(this, new SimpleFirebaseError(ex.Message));
             }
 
         }
@@ -483,7 +483,7 @@ namespace SimpleFirebaseUnity
         /// <param name="isJson">True if string is json (necessary to differentiate the other overloading)</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void UpdateValue(string json, bool isJson, FirebaseParam query)
+        public void UpdateValue(string json, bool isJson, SimpleFirebaseParam query)
         {
             if (!isJson)
                 UpdateValue(json, query.Parameter);
@@ -499,7 +499,7 @@ namespace SimpleFirebaseUnity
         /// <param name="_val">Update value</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void UpdateValue(object _val, FirebaseParam query)
+        public void UpdateValue(object _val, SimpleFirebaseParam query)
         {
             UpdateValue(_val, query.Parameter);
         }
@@ -535,7 +535,7 @@ namespace SimpleFirebaseUnity
             {
                 if (Credential != "")
                 {
-                    param = (new FirebaseParam(param).Auth(Credential)).Parameter;
+                    param = (new SimpleFirebaseParam(param).Auth(Credential)).Parameter;
                 }
 
                 string url = Endpoint;
@@ -553,11 +553,11 @@ namespace SimpleFirebaseUnity
             }
             catch (WebException webEx)
             {
-                if (OnPushFailed != null) OnPushFailed(this, FirebaseError.Create(webEx));
+                if (OnPushFailed != null) OnPushFailed(this, SimpleFirebaseError.Create(webEx));
             }
             catch (Exception ex)
             {
-                if (OnPushFailed != null) OnPushFailed(this, new FirebaseError(ex.Message));
+                if (OnPushFailed != null) OnPushFailed(this, new SimpleFirebaseError(ex.Message));
             }
         }
 
@@ -570,7 +570,7 @@ namespace SimpleFirebaseUnity
         /// <param name="isJson">True if string is json (necessary to differentiate with the other overloading)</param>
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void Push(string json, bool isJson, FirebaseParam query)
+        public void Push(string json, bool isJson, SimpleFirebaseParam query)
         {
             if (!isJson)
                 Push(json, query.Parameter);
@@ -586,7 +586,7 @@ namespace SimpleFirebaseUnity
         /// <param name="_val">New value</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void Push(object _val, FirebaseParam query)
+        public void Push(object _val, SimpleFirebaseParam query)
         {
             Push(_val, query.Parameter);
         }
@@ -604,7 +604,7 @@ namespace SimpleFirebaseUnity
             {
                 if (Credential != "")
                 {
-                    param = (new FirebaseParam(param).Auth(Credential)).Parameter;
+                    param = (new SimpleFirebaseParam(param).Auth(Credential)).Parameter;
                 }
 
                 string url = Endpoint;
@@ -626,11 +626,11 @@ namespace SimpleFirebaseUnity
             }
             catch (WebException webEx)
             {
-                if (OnDeleteFailed != null) OnDeleteFailed(this, FirebaseError.Create(webEx));
+                if (OnDeleteFailed != null) OnDeleteFailed(this, SimpleFirebaseError.Create(webEx));
             }
             catch (Exception ex)
             {
-                if (OnDeleteFailed != null) OnDeleteFailed(this, new FirebaseError(ex.Message));
+                if (OnDeleteFailed != null) OnDeleteFailed(this, new SimpleFirebaseError(ex.Message));
             }
         }
 
@@ -641,7 +641,7 @@ namespace SimpleFirebaseUnity
         /// </summary>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void Delete(FirebaseParam query)
+        public void Delete(SimpleFirebaseParam query)
         {
             Delete(query.Parameter);
         }
@@ -662,9 +662,9 @@ namespace SimpleFirebaseUnity
         /// <param name="keyName">Key name.</param>
         /// <param name="OnSuccess">On success callback.</param>
         /// <param name="OnFailed">On fail callback.</param>
-        public void SetTimeStamp(string keyName, Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed)
+        public void SetTimeStamp(string keyName, Action<SimpleFirebase, SimpleDataSnapshot> OnSuccess, Action<SimpleFirebase, SimpleFirebaseError> OnFailed)
         {
-            Firebase temp = Child(keyName);
+            SimpleFirebase temp = Child(keyName);
             temp.OnSetSuccess += OnSuccess;
             temp.OnSetFailed += OnFailed;
 
@@ -678,7 +678,7 @@ namespace SimpleFirebaseUnity
         /// <param name="OnSuccess">On success callback.</param>
         /// <param name="OnFailed">On failed callback.</param>
         /// <param name="secret">Firebase Secret.</param>
-        public void GetRules(Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, string secret = "")
+        public void GetRules(Action<SimpleFirebase, SimpleDataSnapshot> OnSuccess, Action<SimpleFirebase, SimpleFirebaseError> OnFailed, string secret = "")
         {
             try
             {
@@ -696,11 +696,11 @@ namespace SimpleFirebaseUnity
             }
             catch (WebException webEx)
             {
-                if (OnFailed != null) OnFailed(this, FirebaseError.Create(webEx));
+                if (OnFailed != null) OnFailed(this, SimpleFirebaseError.Create(webEx));
             }
             catch (Exception ex)
             {
-                if (OnFailed != null) OnFailed(this, new FirebaseError(ex.Message));
+                if (OnFailed != null) OnFailed(this, new SimpleFirebaseError(ex.Message));
             }
         }
 
@@ -711,7 +711,7 @@ namespace SimpleFirebaseUnity
         /// <param name="OnSuccess">On success callback.</param>
         /// <param name="OnFailed">On failed callback.</param>
         /// <param name="secret">Firebase Secret.</param>
-        public void SetRules(string json, Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, string secret = "")
+        public void SetRules(string json, Action<SimpleFirebase, SimpleDataSnapshot> OnSuccess, Action<SimpleFirebase, SimpleFirebaseError> OnFailed, string secret = "")
         {
             try
             {
@@ -736,11 +736,11 @@ namespace SimpleFirebaseUnity
             }
             catch (WebException webEx)
             {
-                if (OnFailed != null) OnFailed(this, FirebaseError.Create(webEx));
+                if (OnFailed != null) OnFailed(this, SimpleFirebaseError.Create(webEx));
             }
             catch (Exception ex)
             {
-                if (OnFailed != null) OnFailed(this, new FirebaseError(ex.Message));
+                if (OnFailed != null) OnFailed(this, new SimpleFirebaseError(ex.Message));
             }
         }
 
@@ -761,7 +761,7 @@ namespace SimpleFirebaseUnity
         /// <param name="OnSuccess">On success.</param>
         /// <param name="OnFailed">On failed.</param>
         /// <param name="secret">Firebase Secret.</param>
-        public void SetRules(Dictionary<string, object> rules, Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, string secret = "")
+        public void SetRules(Dictionary<string, object> rules, Action<SimpleFirebase, SimpleDataSnapshot> OnSuccess, Action<SimpleFirebase, SimpleFirebaseError> OnFailed, string secret = "")
         {
             SetRules(Json.Serialize(rules), OnSuccess, OnFailed, secret);
         }
@@ -780,7 +780,7 @@ namespace SimpleFirebaseUnity
 
         #region REQUEST COROUTINE
 
-        protected IEnumerator RequestCoroutine(string url, byte[] postData, Dictionary<string, string> headers, Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed)
+        protected IEnumerator RequestCoroutine(string url, byte[] postData, Dictionary<string, string> headers, Action<SimpleFirebase, SimpleDataSnapshot> OnSuccess, Action<SimpleFirebase, SimpleFirebaseError> OnFailed)
         {
             using (WWW www = (headers != null) ? new WWW(url, postData, headers) : (postData != null) ? new WWW(url, postData) : new WWW(url))
             {
@@ -838,7 +838,7 @@ namespace SimpleFirebaseUnity
                             errMessage = "Request failed with no info of error.";
                         }
 
-                        OnFailed(this, new FirebaseError(status, errMessage));
+                        OnFailed(this, new SimpleFirebaseError(status, errMessage));
                     }
 
 #if UNITY_EDITOR
@@ -847,7 +847,7 @@ namespace SimpleFirebaseUnity
                 }
                 else
                 {
-                    DataSnapshot snapshot = new DataSnapshot(www.text);
+                    SimpleDataSnapshot snapshot = new SimpleDataSnapshot(www.text);
                     if (OnSuccess != null) OnSuccess(this, snapshot);
                 }
             }
@@ -863,9 +863,9 @@ namespace SimpleFirebaseUnity
         /// <param name="host">Example: "hostname.firebaseio.com" (with no https://)</param>
         /// <param name="credential">Credential value for auth parameter</param>
         /// <returns></returns>
-        public static Firebase CreateNew(string host, string credential = "")
+        public static SimpleFirebase CreateNew(string host, string credential = "")
         {
-            return new FirebaseRoot(host, credential);
+            return new SimpleFirebaseRoot(host, credential);
         }
 
         /// <summary>

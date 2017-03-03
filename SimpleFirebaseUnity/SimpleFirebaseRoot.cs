@@ -37,7 +37,7 @@ using System.Collections;
 
 namespace SimpleFirebaseUnity
 {
-    internal class FirebaseRoot : Firebase
+    internal class SimpleFirebaseRoot : SimpleFirebase
     {
 		protected static bool firstTimeInitiated = true;
 		protected string host;
@@ -84,17 +84,17 @@ namespace SimpleFirebaseUnity
 		/// <summary>
 		/// Copy this instance.
 		/// </summary>
-		public FirebaseRoot Copy()
+		public SimpleFirebaseRoot Copy()
 		{
-			return new FirebaseRoot (host, cred);
+			return new SimpleFirebaseRoot (host, cred);
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SimpleFirebaseUnity.FirebaseRoot"/> class.
+		/// Initializes a new instance of the <see cref="SimpleFirebaseUnity.SimpleFirebaseRoot"/> class.
 		/// </summary>
 		/// <param name="_host">Host.</param>
 		/// <param name="_cred">Cred.</param>
-		public FirebaseRoot(string _host, string _cred = "")
+		public SimpleFirebaseRoot(string _host, string _cred = "")
         {
             if (firstTimeInitiated)
             {
@@ -129,7 +129,7 @@ namespace SimpleFirebaseUnity
 		/// <param name="routine">Routine.</param>
 		public void StartCoroutine(IEnumerator routine)
 		{
-			FirebaseManager.Instance.StartCoroutine (routine);
+			SimpleFirebaseManager.Instance.StartCoroutine (routine);
 		}
 
 		/// <summary>
@@ -138,7 +138,7 @@ namespace SimpleFirebaseUnity
 		/// <param name="routine">Routine.</param>
 		public void StopCoroutine(IEnumerator routine)
 		{
-			FirebaseManager.Instance.StopCoroutine (routine);
+			SimpleFirebaseManager.Instance.StopCoroutine (routine);
 		}
     }
 }

@@ -35,15 +35,15 @@ using UnityEngine;
 namespace SimpleFirebaseUnity
 {
     [ExecuteInEditMode]
-    public class FirebaseManager : MonoBehaviour
+    public class SimpleFirebaseManager : MonoBehaviour
     {
 
-        private static FirebaseManager _instance;
+        private static SimpleFirebaseManager _instance;
         private static object _lock = new object();
 
-        protected FirebaseManager() { }
+        protected SimpleFirebaseManager() { }
 
-        public static FirebaseManager Instance
+        public static SimpleFirebaseManager Instance
         {
             get
             {
@@ -58,7 +58,7 @@ namespace SimpleFirebaseUnity
                 {
                     if (_instance == null)
                     {
-                        FirebaseManager[] managers = FindObjectsOfType<FirebaseManager>();
+                        SimpleFirebaseManager[] managers = FindObjectsOfType<SimpleFirebaseManager>();
 
                         _instance = (managers.Length > 0) ? managers[0] : null;
 
@@ -74,7 +74,7 @@ namespace SimpleFirebaseUnity
                         if (_instance == null)
                         {
                             GameObject singleton = new GameObject();
-                            _instance = singleton.AddComponent<FirebaseManager>();
+                            _instance = singleton.AddComponent<SimpleFirebaseManager>();
                             singleton.name = "Firebase Manager [Singleton]";
 
                             DontDestroyOnLoad(singleton);

@@ -35,7 +35,7 @@ using System.Net;
 
 namespace SimpleFirebaseUnity
 {
-    public class FirebaseError : Exception
+    public class SimpleFirebaseError : Exception
     {
 		const string MESSAGE_ERROR_400 = "Firebase request has invalid child names or invalid/missing/too large data";
 		const string MESSAGE_ERROR_401 = "Firebase request's authorization has failed";
@@ -47,21 +47,21 @@ namespace SimpleFirebaseUnity
 		protected HttpStatusCode m_Status;
 
 
-		public FirebaseError(HttpStatusCode status, string message) : base(message)
+		public SimpleFirebaseError(HttpStatusCode status, string message) : base(message)
 		{
 			m_Status = status;
 		}
 
-		public FirebaseError(HttpStatusCode status, string message, Exception inner) : base(message, inner)
+		public SimpleFirebaseError(HttpStatusCode status, string message, Exception inner) : base(message, inner)
 		{
 			m_Status = status;
 		}
 
-		public FirebaseError(string message) : base(message)
+		public SimpleFirebaseError(string message) : base(message)
 		{
 		}
 
-		public FirebaseError(string message, Exception inner) : base(message, inner)
+		public SimpleFirebaseError(string message, Exception inner) : base(message, inner)
 		{
 		}
 
@@ -70,7 +70,7 @@ namespace SimpleFirebaseUnity
 		/// Create the FirebaseError initialized based on the given WebException.
 		/// </summary>
 		/// <param name="webEx">Web exception.</param>
-		public static FirebaseError Create(WebException webEx)
+		public static SimpleFirebaseError Create(WebException webEx)
 		{
 			string message;
 			HttpStatusCode status = 0;
@@ -87,7 +87,7 @@ namespace SimpleFirebaseUnity
 			}
 
 			if (!isStatusAvailable)
-				return new FirebaseError(webEx.Message, webEx);
+				return new SimpleFirebaseError(webEx.Message, webEx);
 
 			switch (status) 
 			{
@@ -111,14 +111,14 @@ namespace SimpleFirebaseUnity
 					break;
 			}
 
-			return new FirebaseError(status, message, webEx);
+			return new SimpleFirebaseError(status, message, webEx);
 		}
 			
 		/// <summary>
 		/// Create the FirebaseError initialized based on the given http status code.
 		/// </summary>
 		/// <param name="status">Http status code.</param>
-		public static FirebaseError Create(HttpStatusCode status)
+		public static SimpleFirebaseError Create(HttpStatusCode status)
 		{
 			string message;
 
@@ -144,7 +144,7 @@ namespace SimpleFirebaseUnity
 					break;
 			}
 
-			return  new FirebaseError (status, message);
+			return  new SimpleFirebaseError (status, message);
 		}
 
 		/// <summary>

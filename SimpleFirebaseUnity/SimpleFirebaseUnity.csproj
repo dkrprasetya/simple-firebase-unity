@@ -41,14 +41,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataSnapshot.cs" />
-    <Compile Include="Firebase.cs" />
-    <Compile Include="FirebaseError.cs" />
-    <Compile Include="FirebaseManager.cs" />
-    <Compile Include="FirebaseObserver.cs" />
-    <Compile Include="FirebaseParam.cs" />
-    <Compile Include="FirebaseQueue.cs" />
-    <Compile Include="FirebaseRoot.cs" />
+    <Compile Include="SimpleDataSnapshot.cs" />
+    <Compile Include="SimpleFirebase.cs" />
+    <Compile Include="SimpleFirebaseError.cs" />
+    <Compile Include="SimpleFirebaseManager.cs" />
+    <Compile Include="SimpleFirebaseObserver.cs" />
+    <Compile Include="SimpleFirebaseParam.cs" />
+    <Compile Include="SimpleFirebaseQueue.cs" />
+    <Compile Include="SimpleFirebaseRoot.cs" />
     <Compile Include="miniJSON.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
