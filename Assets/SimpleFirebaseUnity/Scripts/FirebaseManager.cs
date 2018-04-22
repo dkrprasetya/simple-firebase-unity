@@ -34,7 +34,6 @@ using UnityEngine;
 
 namespace SimpleFirebaseUnity
 {
-    [ExecuteInEditMode]
     public class FirebaseManager : MonoBehaviour
     {
 
@@ -92,6 +91,12 @@ namespace SimpleFirebaseUnity
                 }
             }
         }
+
+		void Awake(){
+			if (Instance != this)
+				Destroy (this);
+		}
+
 
         private static bool applicationIsQuitting = false;
         /// <summary>
