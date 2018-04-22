@@ -2,7 +2,7 @@
 
 Class: Firebase.cs
 ==============================================
-Last update: 2016-07-27  (by Dikra)
+Last update: 2018-04-22  (by Dikra)
 ==============================================
 
 Copyright (c) 2016  M Dikra Prasetya
@@ -40,6 +40,8 @@ using System.Net;
 namespace SimpleFirebaseUnity
 {
     using MiniJSON;
+    using System.Threading;
+
     [Serializable]
     public class Firebase
     {
@@ -64,6 +66,68 @@ namespace SimpleFirebaseUnity
         internal FirebaseRoot root;
         protected string key;
         protected string fullKey;
+
+        #region JSON PARSE THREADING
+
+        class ParserObjToJson
+        {
+            Thread parseThread;
+            public bool isDone;
+            public string json;
+
+            object sourceObj;
+
+            public ParserObjToJson(object sourceObj)
+            {
+                isDone = false;
+                this.sourceObj = sourceObj;
+                parseThread = new Thread(Run);
+                parseThread.Start();
+            }
+
+            void Run()
+            {
+                json = Json.Serialize(sourceObj);
+                isDone = true;
+            }
+        }
+
+        IEnumerator JsonSerializeRoutine(object sourceObj, string param, Action<string, string> onCompleted)
+        {
+            ParserObjToJson parser = new ParserObjToJson(sourceObj);
+
+            while (!parser.isDone)
+                yield return null;
+
+            if (onCompleted != null)
+                onCompleted(parser.json, param);
+        }
+
+        class ParserJsonToSnapshot
+        {
+            Thread parseThread;
+            public bool isDone;
+            public DataSnapshot snapshot;
+
+            string json;
+
+            public ParserJsonToSnapshot(string json)
+            {
+                isDone = false;
+                this.json = json;
+                parseThread = new Thread(Run);
+                parseThread.Start();
+            }
+
+            void Run()
+            {
+                snapshot = new DataSnapshot(json);
+                isDone = true;
+            }
+        }
+
+
+        #endregion
 
         #region GET-SET
 
@@ -281,6 +345,8 @@ namespace SimpleFirebaseUnity
 
         #region REST FUNCTIONS
 
+        /*** GET ***/
+
         /// <summary>
         /// Fetch data from Firebase. Calls OnGetSuccess on success, OnGetFailed on failed.
         /// OnGetSuccess action contains the corresponding Firebase and the fetched Snapshot
@@ -329,32 +395,17 @@ namespace SimpleFirebaseUnity
 
         }
 
-        /// <summary>
-        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
-        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
-        /// OnUpdateFailed action contains the error exception
-        /// </summary>
-        /// <param name="json">String</param>
-        /// <param name="isJson">True if string is json (necessary to differentiate with the other overloading)</param>
-        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
-        /// <returns></returns>
-        public void SetValue(string json, bool isJson, string param = "")
-        {
-            if (!isJson)
-                SetValue(json, param);
-            else
-                SetValue(Json.Deserialize(json), param);
-        }
+        /*** SET ***/
 
         /// <summary>
-        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// Set value of a key on Firebase. Calls OnSetSuccess on success, OnSetFailed on failed.
         /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnSetFailed action contains the error exception
         /// </summary>
-        /// <param name="_val">Set value</param>
+        /// <param name="valJson">Set value in json format</param>
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void SetValue(object _val, string param = "")
+        public void SetValueJson(string valJson, string param = "")
         {
             try
             {
@@ -375,7 +426,7 @@ namespace SimpleFirebaseUnity
                 headers.Add("X-HTTP-Method-Override", "PUT");
 
                 //UTF8Encoding encoding = new UTF8Encoding();
-                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(Json.Serialize(_val));
+                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(valJson);
 
                 root.StartCoroutine(RequestCoroutine(url, bytes, headers, OnSetSuccess, OnSetFailed));
             }
@@ -392,19 +443,19 @@ namespace SimpleFirebaseUnity
 
         /// <summary>
         /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
-        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
-        /// OnSetFailed action contains the error exception
+        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnUpdateFailed action contains the error exception
         /// </summary>
-        /// <param name="json">String</param>
-        /// <param name="isJson">True if string is json (necessary to differentiate the other overloading)</param>
-        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <param name="val">Set value</param>
+        /// <param name="parseToJson">True if string needed to be parsed into Json</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void SetValue(string json, bool isJson, FirebaseParam query)
+        public void SetValue(string val, bool parseToJson, string param = "")
         {
-            if (!isJson)
-                SetValue(json, query.Parameter);
+            if (!parseToJson)
+                SetValueJson(val, param);
             else
-                SetValue(Json.Deserialize(json), query.Parameter);
+                root.StartCoroutine(JsonSerializeRoutine(val, param, SetValueJson));
         }
 
         /// <summary>
@@ -412,36 +463,59 @@ namespace SimpleFirebaseUnity
         /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnSetFailed action contains the error exception
         /// </summary>
-        /// <param name="_val">Update value</param>
+        /// <param name="val">Set value</param>
+        /// <param name="parseToJson">True if string needed to be parsed into Json</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void SetValue(object _val, FirebaseParam query)
+        public void SetValue(string val, bool parseToJson, FirebaseParam query)
         {
-            SetValue(_val, query.Parameter);
+            if (!parseToJson)
+                SetValueJson(val, query.Parameter);
+            else
+                root.StartCoroutine(JsonSerializeRoutine(val, query.Parameter, SetValueJson));
+        }
+
+        /// <summary>
+        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnSetFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Set value</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        /// <returns></returns>
+        public void SetValue(object val, string param = "")
+        {
+            root.StartCoroutine(JsonSerializeRoutine(val, param, SetValueJson));
+        }
+
+        /// <summary>
+        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnSetFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Set value</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <returns></returns>
+        public void SetValue(object val, FirebaseParam query)
+        {
+            root.StartCoroutine(JsonSerializeRoutine(val, query.Parameter, SetValueJson));
         }
 
 
+        /*** UPDATE ***/
 
         /// <summary>
         /// Update value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
         /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnUpdateFailed action contains the error exception
         /// </summary>
-        /// <param name="_val">Set value</param>
+        /// <param name="valJson">Update value in json format</param>
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void UpdateValue(object _val, string param = "")
+        public void UpdateValueJson(string valJson, string param = "")
         {
             try
             {
-                if (!(_val is Dictionary<string, object>))
-                {
-                    if (OnUpdateFailed != null)
-                        OnUpdateFailed(this, new FirebaseError((HttpStatusCode)400, "Invalid data; couldn't parse JSON object. Are you sending a JSON object with valid key names?"));
-
-                    return;
-                }
-
                 if (Credential != "")
                 {
                     param = (new FirebaseParam(param).Auth(Credential)).Parameter;
@@ -459,7 +533,7 @@ namespace SimpleFirebaseUnity
                 headers.Add("X-HTTP-Method-Override", "PATCH");
 
                 //UTF8Encoding encoding = new UTF8Encoding();
-                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(Json.Serialize(_val));
+                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(valJson);
 
                 root.StartCoroutine(RequestCoroutine(url, bytes, headers, OnUpdateSuccess, OnUpdateFailed));
             }
@@ -479,16 +553,20 @@ namespace SimpleFirebaseUnity
         /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnUpdateFailed action contains the error exception
         /// </summary>
-        /// <param name="json">String</param>
-        /// <param name="isJson">True if string is json (necessary to differentiate the other overloading)</param>
+        /// <param name="val">Update value</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void UpdateValue(string json, bool isJson, FirebaseParam query)
+        public void UpdateValue(object val, string param = "")
         {
-            if (!isJson)
-                UpdateValue(json, query.Parameter);
-            else
-                UpdateValue(Json.Deserialize(json), query.Parameter);
+            if (!(val is Dictionary<string, object>))
+            {
+                if (OnUpdateFailed != null)
+                    OnUpdateFailed(this, new FirebaseError((HttpStatusCode)400, "Invalid data; couldn't parse JSON object. Are you sending a JSON object with valid key names?"));
+
+                return;
+            }
+
+            root.StartCoroutine(JsonSerializeRoutine(val, param, UpdateValue));
         }
 
         /// <summary>
@@ -496,40 +574,47 @@ namespace SimpleFirebaseUnity
         /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnUpdateFailed action contains the error exception
         /// </summary>
-        /// <param name="_val">Update value</param>
+        /// <param name="valJson">Update value in json format</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void UpdateValue(object _val, FirebaseParam query)
+        public void UpdateValue(object val, FirebaseParam query)
         {
-            UpdateValue(_val, query.Parameter);
+            if (!(val is Dictionary<string, object>))
+            {
+                if (OnUpdateFailed != null)
+                    OnUpdateFailed(this, new FirebaseError((HttpStatusCode)400, "Invalid data; couldn't parse JSON object. Are you sending a JSON object with valid key names?"));
+
+                return;
+            }
+
+            root.StartCoroutine(JsonSerializeRoutine(val, query.Parameter, UpdateValue));
         }
+
+        /// <summary>
+        /// Update value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnUpdateFailed action contains the error exception
+        /// </summary>
+        /// <param name="valJson">Update value</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <returns></returns>
+        public void UpdateValue(string valJson,FirebaseParam query)
+        {
+            UpdateValue(valJson, query.Parameter);
+        }
+
+
+        /*** PUSH ***/
 
         /// <summary>
         /// Push a value (with random new key) on a key in Firebase. Calls OnPushSuccess on success, OnPushFailed on failed.
         /// OnPushSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnPushFailed action contains the error exception
         /// </summary>
-        /// <param name="json">String</param>
-        /// <param name="isJson">True if string is json (necessary to differentiate with the other overloading)</param>
+        /// <param name="valJson">Push value in json format</param>
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void Push(string json, bool isJson, string param = "")
-        {
-            if (!isJson)
-                Push(json, param);
-            else
-                Push(Json.Deserialize(json), param);
-        }
-
-        /// <summary>
-        /// Update value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
-        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
-        /// OnUpdateFailed action contains the error exception
-        /// </summary>
-        /// <param name="_val">New value</param>
-        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
-        /// <returns></returns>
-        public void Push(object _val, string param = "")
+        public void PushJson(string valJson, string param = "")
         {
             try
             {
@@ -547,7 +632,7 @@ namespace SimpleFirebaseUnity
 
 
                 //UTF8Encoding encoding = new UTF8Encoding();
-                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(Json.Serialize(_val));
+                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(valJson);
 
                 root.StartCoroutine(RequestCoroutine(url, bytes, null, OnPushSuccess, OnPushFailed));
             }
@@ -561,21 +646,22 @@ namespace SimpleFirebaseUnity
             }
         }
 
+
         /// <summary>
         /// Push a value (with random new key) on a key in Firebase. Calls OnPushSuccess on success, OnPushFailed on failed.
         /// OnPushSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnPushFailed action contains the error exception
         /// </summary>
-        /// <param name="json">String</param>
-        /// <param name="isJson">True if string is json (necessary to differentiate with the other overloading)</param>
+        /// <param name="val">Push value</param>
+        /// <param name="parseToJson">True if string needed to be parsed into Json</param>
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void Push(string json, bool isJson, FirebaseParam query)
+        public void Push(string val, bool parseToJson, string param = "")
         {
-            if (!isJson)
-                Push(json, query.Parameter);
+            if (!parseToJson)
+                PushJson(val, param);
             else
-                Push(Json.Deserialize(json), query.Parameter);
+                root.StartCoroutine(JsonSerializeRoutine(val, param, PushJson));
         }
 
         /// <summary>
@@ -583,13 +669,46 @@ namespace SimpleFirebaseUnity
         /// OnPushSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnPushFailed action contains the error exception
         /// </summary>
-        /// <param name="_val">New value</param>
+        /// <param name="val">Push value</param>
+        /// <param name="parseToJson">True if string needed to be parsed into Json</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        /// <returns></returns>
+        public void Push(string val, bool parseToJson, FirebaseParam query)
+        {
+            if (!parseToJson)
+                PushJson(val, query.Parameter);
+            else
+                root.StartCoroutine(JsonSerializeRoutine(val, query.Parameter, PushJson));
+        }
+
+        /// <summary>
+        /// Push a value (with random new key) on a key in Firebase. Calls OnPushSuccess on success, OnPushFailed on failed.
+        /// OnPushSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnPushFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Push value</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        /// <returns></returns>
+        public void Push(object val, string param = "")
+        {
+            root.StartCoroutine(JsonSerializeRoutine(val, param, PushJson));
+        }
+
+        /// <summary>
+        /// Push a value (with random new key) on a key in Firebase. Calls OnPushSuccess on success, OnPushFailed on failed.
+        /// OnPushSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnPushFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Push value</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void Push(object _val, FirebaseParam query)
+        public void Push(object val, FirebaseParam query)
         {
-            Push(_val, query.Parameter);
+            root.StartCoroutine(JsonSerializeRoutine(val, query.Parameter, PushJson));
         }
+
+
+        /*** DELETE ***/
 
         /// <summary>
         /// Delete a key in Firebase. Calls OnDeleteSuccess on success, OnDeleteFailed on failed.
@@ -647,6 +766,8 @@ namespace SimpleFirebaseUnity
         }
 
 
+        /*** TIME STAMP ***/
+
         /// <summary>
         /// Sets the time stamp with the time since UNIX epoch by server value (in milliseconds).
         /// </summary>
@@ -671,6 +792,8 @@ namespace SimpleFirebaseUnity
             temp.SetValue(SERVER_VALUE_TIMESTAMP, true);
         }
 
+
+        /*** DELETE ***/
 
         /// <summary>
         /// Gets Firebase Rules. Returned value is treated the same as returned value on Get request, packaged in DataSnapshot. Please note that FIREBASE_SECRET is required. If secret parameter is not set, it will use the Credential that has been set when CreateNew called.
@@ -847,7 +970,12 @@ namespace SimpleFirebaseUnity
                 }
                 else
                 {
-                    DataSnapshot snapshot = new DataSnapshot(www.text);
+                    ParserJsonToSnapshot parser = new ParserJsonToSnapshot(www.text);
+
+                    while (!parser.isDone)
+                        yield return null;
+
+                    DataSnapshot snapshot = parser.snapshot;
                     if (OnSuccess != null) OnSuccess(this, snapshot);
                 }
             }

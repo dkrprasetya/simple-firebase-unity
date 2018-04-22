@@ -142,7 +142,7 @@ namespace SimpleFirebaseUnity
 				return;
 			}
 
-			if (!snapshot.RawJson.Equals (lastSnapshot.RawJson)) {
+			if ((snapshot == null && lastSnapshot != null) || !snapshot.RawJson.Equals (lastSnapshot.RawJson)) {
 				if (OnChange != null)
 					OnChange (firebase, snapshot);
 			}

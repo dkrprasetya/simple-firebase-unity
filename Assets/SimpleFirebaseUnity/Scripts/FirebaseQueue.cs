@@ -55,47 +55,72 @@ namespace SimpleFirebaseUnity
 			public Firebase firebase;
 			FirebaseCommand command;
 			string param;
-			object obj;
+            object valObj;
+			string valStr;
+            bool parseToJson;
 			public CommandLinkedList next;
 
-			public CommandLinkedList(Firebase _firebase, FirebaseCommand _command, string _param, object _obj = null){
+			public CommandLinkedList(Firebase _firebase, FirebaseCommand _command, string _param){
 				firebase = _firebase;
 				command = _command;
 				param = _param;
-				obj = _obj;
+                valObj = null;
+                valStr = null;
 				next = null;
 			}
 
-			public CommandLinkedList(Firebase _firebase, FirebaseCommand _command, FirebaseParam firebaseParam, object _obj = null){
-				firebase = _firebase;
-				command = _command;
-				param = firebaseParam.Parameter;
-				obj = _obj;
-				next = null;
-			}
+            public CommandLinkedList(Firebase _firebase, FirebaseCommand _command, string _param, object _valObj)
+            {
+                firebase = _firebase;
+                command = _command;
+                param = _param;
+                valObj = _valObj;
+                valStr = null;
+                next = null;
+            }
 
-			public void AddNext(CommandLinkedList _next){
+            public CommandLinkedList(Firebase _firebase, FirebaseCommand _command, string _param, string _valStr, bool _parseToJson)
+            {
+                firebase = _firebase;
+                command = _command;
+                param = _param;
+                valObj = null;
+                valStr = _valStr;
+                parseToJson = _parseToJson;
+                next = null;
+            }
+
+            public void AddNext(CommandLinkedList _next){
 				next = _next;
 			}
 
 			public void DoCommand()
 			{
 				switch (command) {
-				case FirebaseCommand.Get:
-					firebase.GetValue (param);
-					break;
-				case FirebaseCommand.Set:
-					firebase.SetValue (obj, param);
-					break;
-				case FirebaseCommand.Update:
-					firebase.UpdateValue (obj, param);
-					break;
-				case FirebaseCommand.Push:
-					firebase.Push (obj, param);
-					break;
-				case FirebaseCommand.Delete:
-					firebase.Delete (param);
-					break;
+				    case FirebaseCommand.Get:
+					    firebase.GetValue (param);
+					    break;
+				    case FirebaseCommand.Set:
+                        if (valObj != null)
+					        firebase.SetValue(valObj, param);
+                        else
+                            firebase.SetValue(valStr, parseToJson, param);
+                        break;
+				    case FirebaseCommand.Update:
+                        if (valObj != null)                            
+					        firebase.UpdateValue(valObj, param);
+                        else
+                            firebase.UpdateValueJson(valStr, param);
+                        break;
+				    case FirebaseCommand.Push:
+                        if (valObj != null)
+                            firebase.Push(valObj, param);
+                        else
+                            firebase.Push(valStr, parseToJson, param);
+					    break;
+				    case FirebaseCommand.Delete:
+					    firebase.Delete (param);
+					    break;
 				}
 			}
 		}
@@ -107,23 +132,42 @@ namespace SimpleFirebaseUnity
 		protected bool autoStart;
 		protected int count;
 
-		protected void AddQueue(Firebase firebase, FirebaseCommand command, string param, object obj = null)
+        protected void AddQueue(Firebase firebase, FirebaseCommand command, string param)
+        {
+            CommandLinkedList commandNode = new CommandLinkedList(firebase, command, param);
+            InsertNodeToQueue(commandNode);
+        }
+
+        protected void AddQueue(Firebase firebase, FirebaseCommand command, string param, string valStr, bool parseToJson)
 		{
-			CommandLinkedList commandNode =  new CommandLinkedList (firebase, command, param, obj);
-
-			if (head == null) {
-				head = commandNode;
-				tail = commandNode;
-
-				if (autoStart)
-					head.DoCommand();
-			} else {
-				tail.next = commandNode;
-				tail = commandNode;
-			}
-
-			++count;
+			CommandLinkedList commandNode =  new CommandLinkedList (firebase, command, param, valStr, parseToJson);
+            InsertNodeToQueue(commandNode);
 		}
+
+        protected void AddQueue(Firebase firebase, FirebaseCommand command, string param, object valObj)
+        {
+            CommandLinkedList commandNode = new CommandLinkedList(firebase, command, param, valObj);
+            InsertNodeToQueue(commandNode);
+        }
+
+        void InsertNodeToQueue(CommandLinkedList commandNode)
+        {
+            if (head == null)
+            {
+                head = commandNode;
+                tail = commandNode;
+
+                if (autoStart)
+                    head.DoCommand();
+            }
+            else
+            {
+                tail.next = commandNode;
+                tail = commandNode;
+            }
+
+            ++count;
+        }
 
 		protected void ClearQueueTopDown(CommandLinkedList node)
 		{
@@ -253,10 +297,23 @@ namespace SimpleFirebaseUnity
 		/// <param name="param">Parameter.</param>
 		public void AddQueueSet(Firebase firebase, object val, FirebaseParam param)
 		{
+            AddQueueSet(firebase, val, param.Parameter);
+        }
+
+		/// <summary>
+		/// Adds Firebase Set request to queue.
+		/// </summary>
+		/// <param name="firebase">Firebase.</param>
+		/// <param name="val">Set value.</param>
+		/// <param name="isJson">If set to <c>true</c> is json.</param>
+		/// <param name="param">Parameter.</param>
+		public void AddQueueSet(Firebase firebase, string val, bool parseToJson, string param = "")
+		{
 			Firebase temp = firebase.Copy (true);
 			temp.OnSetSuccess += OnSuccess;
 			temp.OnSetFailed += OnFailed;
-			AddQueue (temp, FirebaseCommand.Set, param.Parameter, val);
+
+            AddQueue (temp, FirebaseCommand.Set, param, val, parseToJson);
 		}
 
 		/// <summary>
@@ -266,33 +323,9 @@ namespace SimpleFirebaseUnity
 		/// <param name="json">Json.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueueSet(Firebase firebase, string json, bool isJson, string param = "")
+		public void AddQueueSet(Firebase firebase, string val, bool parseToJson, FirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
-			temp.OnSetSuccess += OnSuccess;
-			temp.OnSetFailed += OnFailed;
-			if (!isJson)
-				AddQueue (temp, FirebaseCommand.Set, param, json);
-			else
-				AddQueue (temp, FirebaseCommand.Set, param, Json.Deserialize(json));
-		}
-
-		/// <summary>
-		/// Adds Firebase Set request to queue.
-		/// </summary>
-		/// <param name="firebase">Firebase.</param>
-		/// <param name="json">Json.</param>
-		/// <param name="isJson">If set to <c>true</c> is json.</param>
-		/// <param name="param">Parameter.</param>
-		public void AddQueueSet(Firebase firebase, string json, bool isJson, FirebaseParam param)
-		{
-			Firebase temp = firebase.Copy (true);
-			temp.OnSetSuccess += OnSuccess;
-			temp.OnSetFailed += OnFailed;
-			if (!isJson)
-				AddQueue (temp, FirebaseCommand.Set, param.Parameter, json);
-			else
-				AddQueue (temp, FirebaseCommand.Set, param.Parameter, Json.Deserialize(json));
+            AddQueueSet(firebase, val, parseToJson, param.Parameter);
 		}
 
 		/// <summary>
@@ -303,8 +336,10 @@ namespace SimpleFirebaseUnity
 		/// <param name="param">Parameter.</param>
 		public void AddQueueUpdate(Firebase firebase, object val, string param = "")
 		{
-			firebase.OnUpdateSuccess += OnSuccess;
-			firebase.OnUpdateFailed += OnFailed;
+            Firebase temp = firebase.Copy(true);
+            temp.OnSetSuccess += OnSuccess;
+            temp.OnSetFailed += OnFailed;
+
 			AddQueue (firebase, FirebaseCommand.Update, param, val);
 		}
 
@@ -316,46 +351,33 @@ namespace SimpleFirebaseUnity
 		/// <param name="param">Parameter.</param>
 		public void AddQueueUpdate(Firebase firebase, object val, FirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
-			temp.OnUpdateSuccess += OnSuccess;
-			temp.OnUpdateFailed += OnFailed;
-			AddQueue (temp, FirebaseCommand.Update, param.Parameter, val);
+            AddQueueUpdate(firebase, val, param.Parameter);
 		}
 
-		/// <summary>
-		/// Adds Firebase Update request to queue.
-		/// </summary>
-		/// <param name="firebase">Firebase.</param>
-		/// <param name="json">Json.</param>
-		/// <param name="isJson">If set to <c>true</c> is json.</param>
-		/// <param name="param">Parameter.</param>
-		public void AddQueueUpdate(Firebase firebase, string json, bool isJson, string param = "")
+        /// <summary>
+        /// Adds Firebase Update request to queue.
+        /// </summary>
+        /// <param name="firebase">Firebase.</param>
+        /// <param name="valJson">Value in json format.</param>
+        /// <param name="param">Parameter.</param>
+        public void AddQueueUpdate(Firebase firebase, string valJson, string param = "")
 		{
 			Firebase temp = firebase.Copy (true);
 			temp.OnUpdateSuccess += OnSuccess;
 			temp.OnUpdateFailed += OnFailed;
-			if (!isJson)
-				AddQueue (temp, FirebaseCommand.Update, param, json);
-			else
-				AddQueue (temp, FirebaseCommand.Update, param, Json.Deserialize(json));
+
+            AddQueue (temp, FirebaseCommand.Update, param, valJson, false); // Update value is strictly json.
 		}
 
-		/// <summary>
-		/// Adds Firebase Update request to queue.
-		/// </summary>
-		/// <param name="firebase">Firebase.</param>
-		/// <param name="json">Json.</param>
-		/// <param name="isJson">If set to <c>true</c> is json.</param>
-		/// <param name="param">Parameter.</param>
-		public void AddQueueUpdate(Firebase firebase, string json, bool isJson, FirebaseParam param)
+        /// <summary>
+        /// Adds Firebase Update request to queue.
+        /// </summary>
+        /// <param name="firebase">Firebase.</param>
+        /// <param name="valJson">Value in json format.</param>
+        /// <param name="param">Parameter.</param>
+        public void AddQueueUpdate(Firebase firebase, string valJson, FirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
-			temp.OnUpdateSuccess += OnSuccess;
-			temp.OnUpdateFailed += OnFailed;
-			if (!isJson)
-				AddQueue (temp, FirebaseCommand.Update, param.Parameter, json);
-			else
-				AddQueue (temp, FirebaseCommand.Update, param.Parameter, Json.Deserialize(json));
+            AddQueueUpdate(firebase, valJson, param.Parameter);
 		}
 
 		/// <summary>
@@ -369,7 +391,7 @@ namespace SimpleFirebaseUnity
 			Firebase temp = firebase.Copy (true);
 			temp.OnPushSuccess += OnSuccess;
 			temp.OnPushFailed += OnFailed;
-			AddQueue (temp, FirebaseCommand.Push, param, val);
+			AddQueue (temp, FirebaseCommand.Push, param, Json.Serialize(val));
 		}
 
 		/// <summary>
@@ -380,46 +402,35 @@ namespace SimpleFirebaseUnity
 		/// <param name="param">Parameter.</param>
 		public void AddQueuePush(Firebase firebase, object val, FirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
-			temp.OnPushSuccess += OnSuccess;
-			temp.OnPushFailed += OnFailed;
-			AddQueue (temp, FirebaseCommand.Push, param.Parameter, val);
+            AddQueuePush(firebase, val, param.Parameter);
 		}
 
 		/// <summary>
 		/// Adds Firebase Push request to queue.
 		/// </summary>
 		/// <param name="firebase">Firebase.</param>
-		/// <param name="json">Json.</param>
+		/// <param name="val">Value.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueuePush(Firebase firebase, string json, bool isJson, string param = "")
+		public void AddQueuePush(Firebase firebase, string val, bool parseToJson, string param = "")
 		{
 			Firebase temp = firebase.Copy (true);
 			temp.OnPushSuccess += OnSuccess;
 			temp.OnPushFailed += OnFailed;
-			if (!isJson)
-				AddQueue (temp, FirebaseCommand.Push, param, json);
-			else
-				AddQueue (temp, FirebaseCommand.Push, param, Json.Deserialize(json));
-		}
+
+            AddQueue(temp, FirebaseCommand.Push, param, val, parseToJson);
+        }
 
 		/// <summary>
 		/// Adds Firebase Push request to queue.
 		/// </summary>
 		/// <param name="firebase">Firebase.</param>
-		/// <param name="json">Json.</param>
+		/// <param name="val">Value.</param>
 		/// <param name="isJson">If set to <c>true</c> is json.</param>
 		/// <param name="param">Parameter.</param>
-		public void AddQueuePush(Firebase firebase, string json, bool isJson, FirebaseParam param)
+		public void AddQueuePush(Firebase firebase, string val, bool parseToJson, FirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
-			temp.OnPushSuccess += OnSuccess;
-			temp.OnPushFailed += OnFailed;
-			if (!isJson)
-				AddQueue (temp, FirebaseCommand.Push, param.Parameter, json);
-			else
-				AddQueue (temp, FirebaseCommand.Push, param.Parameter, Json.Deserialize(json));
+            AddQueuePush(firebase, val, parseToJson, param.Parameter);
 		}
 
 		/// <summary>
@@ -442,10 +453,7 @@ namespace SimpleFirebaseUnity
 		/// <param name="param">Parameter.</param>
 		public void AddQueueDelete(Firebase firebase, FirebaseParam param)
 		{
-			Firebase temp = firebase.Copy (true);
-			temp.OnDeleteSuccess += OnSuccess;
-			temp.OnDeleteFailed += OnFailed;
-			AddQueue (temp, FirebaseCommand.Delete, param.Parameter);
+            AddQueueDelete(firebase, param.Parameter);
 		}
 
 		/// <summary>
@@ -456,7 +464,9 @@ namespace SimpleFirebaseUnity
 		public void AddQueueSetTimeStamp(Firebase firebase, string keyName)
 		{
 			Firebase temp = firebase.Child (keyName, false);
-			AddQueueSet (temp, SERVER_VALUE_TIMESTAMP, true, "print=silent");
+
+            UnityEngine.Debug.LogWarning("SERVER VALUE TIMESTAMP = " + SERVER_VALUE_TIMESTAMP);
+			AddQueueSet (temp, SERVER_VALUE_TIMESTAMP, false, "print=silent");
 		}
 
 		/// <summary>
@@ -472,7 +482,7 @@ namespace SimpleFirebaseUnity
 			temp.OnSetSuccess += _OnSuccess;
 			temp.OnSetFailed += _OnFailed;
 
-			AddQueueSet (temp, SERVER_VALUE_TIMESTAMP, true);
+			AddQueueSet (temp, SERVER_VALUE_TIMESTAMP, false);
 		}
 
 

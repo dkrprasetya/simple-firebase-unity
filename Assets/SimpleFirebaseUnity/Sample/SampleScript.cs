@@ -26,8 +26,8 @@ public class SampleScript : MonoBehaviour
     
     void GetOKHandler(Firebase sender, DataSnapshot snapshot)
     {
-        DoDebug("[OK] Get from key: <" + sender.FullKey + ">");
-        DoDebug("[OK] Raw Json: " + snapshot.RawJson);
+        DebugLog("[OK] Get from key: <" + sender.FullKey + ">");
+        DebugLog("[OK] Raw Json: " + snapshot.RawJson);
 
         Dictionary<string, object> dict = snapshot.Value<Dictionary<string, object>>();
         List<string> keys = snapshot.Keys;
@@ -35,64 +35,64 @@ public class SampleScript : MonoBehaviour
         if (keys != null)
             foreach (string key in keys)
             {
-                DoDebug(key + " = " + dict[key].ToString());
+                DebugLog(key + " = " + dict[key].ToString());
             }
     }
 
     void GetFailHandler(Firebase sender, FirebaseError err)
     {
-        DoDebug("[ERR] Get from key: <" + sender.FullKey + ">,  " + err.Message + " (" + (int)err.Status + ")");
+        DebugError("[ERR] Get from key: <" + sender.FullKey + ">,  " + err.Message + " (" + (int)err.Status + ")");
     }
 
     void SetOKHandler(Firebase sender, DataSnapshot snapshot)
     {
-        DoDebug("[OK] Set from key: <" + sender.FullKey + ">");
+        DebugLog("[OK] Set from key: <" + sender.FullKey + ">");
     }
 
     void SetFailHandler(Firebase sender, FirebaseError err)
     {
-        DoDebug("[ERR] Set from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
+        DebugError("[ERR] Set from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
     }
 
 	void UpdateOKHandler(Firebase sender, DataSnapshot snapshot)
 	{
-		DoDebug("[OK] Update from key: <" + sender.FullKey + ">");
+		DebugLog("[OK] Update from key: <" + sender.FullKey + ">");
 	}
 
 	void UpdateFailHandler(Firebase sender, FirebaseError err)
 	{
-		DoDebug("[ERR] Update from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
+        DebugError("[ERR] Update from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
 	}
 
     void DelOKHandler(Firebase sender, DataSnapshot snapshot)
     {
-        DoDebug("[OK] Del from key: <" + sender.FullKey + ">");
+        DebugLog("[OK] Del from key: <" + sender.FullKey + ">");
     }
 
     void DelFailHandler(Firebase sender, FirebaseError err)
     {
-        DoDebug("[ERR] Del from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
+        DebugError("[ERR] Del from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
     }
 
     void PushOKHandler(Firebase sender, DataSnapshot snapshot)
     {
-        DoDebug("[OK] Push from key: <" + sender.FullKey + ">");
+        DebugLog("[OK] Push from key: <" + sender.FullKey + ">");
     }
 
     void PushFailHandler(Firebase sender, FirebaseError err)
     {
-        DoDebug("[ERR] Push from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
+        DebugError("[ERR] Push from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
     }
 
 	void GetRulesOKHandler(Firebase sender, DataSnapshot snapshot)
 	{
-		DoDebug("[OK] GetRules");
-		DoDebug("[OK] Raw Json: " + snapshot.RawJson);
+		DebugLog("[OK] GetRules");
+		DebugLog("[OK] Raw Json: " + snapshot.RawJson);
 	}
 
 	void GetRulesFailHandler(Firebase sender, FirebaseError err)
 	{
-		DoDebug("[ERR] GetRules,  " + err.Message + " (" + (int)err.Status + ")");
+		DebugError("[ERR] GetRules,  " + err.Message + " (" + (int)err.Status + ")");
 	}
 
 	void GetTimeStamp(Firebase sender, DataSnapshot snapshot)
@@ -100,11 +100,11 @@ public class SampleScript : MonoBehaviour
 		long timeStamp = snapshot.Value<long> ();
 		DateTime dateTime = Firebase.TimeStampToDateTime (timeStamp);
 
-		DoDebug ("[OK] Get on timestamp key: <" + sender.FullKey + ">");
-		DoDebug("Date: " + timeStamp + " --> " + dateTime.ToString ());
+		DebugLog ("[OK] Get on timestamp key: <" + sender.FullKey + ">");
+		DebugLog("Date: " + timeStamp + " --> " + dateTime.ToString ());
 	}
 
-    void DoDebug(string str)
+    void DebugLog(string str)
     {
         Debug.Log(str);
         if (textMesh != null)
@@ -113,7 +113,25 @@ public class SampleScript : MonoBehaviour
         }
     }
 
-	IEnumerator Tests()
+    void DebugWarning(string str)
+    {
+        Debug.LogWarning(str);
+        if (textMesh != null)
+        {
+            textMesh.text += (++debug_idx + ". " + str) + "\n";
+        }
+    }
+
+    void DebugError(string str)
+    {
+        Debug.LogError(str);
+        if (textMesh != null)
+        {
+            textMesh.text += (++debug_idx + ". " + str) + "\n";
+        }
+    }
+
+    IEnumerator Tests()
 	{
 		// Inits Firebase using Firebase Secret Key as Auth
 		// The current provided implementation not yet including Auth Token Generation
@@ -142,17 +160,17 @@ public class SampleScript : MonoBehaviour
 		// Make observer on "last update" time stamp
 		FirebaseObserver observer = new FirebaseObserver(lastUpdate, 1f);
 		observer.OnChange += (Firebase sender, DataSnapshot snapshot)=>{
-			DoDebug("[OBSERVER] Last updated changed to: " + snapshot.Value<long>());
+			DebugLog("[OBSERVER] Last updated changed to: " + snapshot.Value<long>());
 		};
 		observer.Start ();
-		DoDebug ("[OBSERVER] FirebaseObserver on " + lastUpdate.FullKey +" started!");
+		DebugLog ("[OBSERVER] FirebaseObserver on " + lastUpdate.FullKey +" started!");
 
 		// Print details
-		DoDebug("Firebase endpoint: " + firebase.Endpoint);
-		DoDebug("Firebase key: " + firebase.Key);
-		DoDebug("Firebase fullKey: " + firebase.FullKey);
-		DoDebug("Firebase child key: " + temporary.Key);
-		DoDebug("Firebase child fullKey: " + temporary.FullKey);
+		DebugLog("Firebase endpoint: " + firebase.Endpoint);
+		DebugLog("Firebase key: " + firebase.Key);
+		DebugLog("Firebase fullKey: " + firebase.FullKey);
+		DebugLog("Firebase child key: " + temporary.Key);
+		DebugLog("Firebase child fullKey: " + temporary.FullKey);
 
 		// Unnecessarily skips a frame, really, unnecessary.
 		yield return null;
@@ -163,27 +181,27 @@ public class SampleScript : MonoBehaviour
 		// Test #1: Test all firebase commands, using FirebaseQueueManager
 		// The requests should be running in order 
 		firebaseQueue.AddQueueSet (firebase, GetSampleScoreBoard (), FirebaseParam.Empty.PrintSilent ());
-		firebaseQueue.AddQueuePush (firebase.Child ("broadcasts", true), "{ \"name\": \"simple-firebase-csharp\", \"message\": \"awesome!\"}", true);
+		firebaseQueue.AddQueuePush (firebase.Child ("broadcasts", true), "{ \"name\": \"simple-firebase-csharp\", \"message\": \"awesome!\"}", false);
 		firebaseQueue.AddQueueSetTimeStamp (firebase, "lastUpdate");
 		firebaseQueue.AddQueueGet (firebase, "print=pretty");
-		firebaseQueue.AddQueueUpdate (firebase.Child ("layout", true), "{\"x\": 5.8, \"y\":-94}", true);
+		firebaseQueue.AddQueueUpdate (firebase.Child ("layout", true), "{\"x\": 5.8, \"y\":-94}");
 		firebaseQueue.AddQueueGet (firebase.Child ("layout", true));
 		firebaseQueue.AddQueueGet (lastUpdate);
 
 		//Deliberately make an error for an example
-		DoDebug("[WARNING] There is one invalid request below which will gives error, only for example on error handling.");
+		DebugWarning("[WARNING] There is one invalid request below (Get with invalid OrderBy) which will gives error, only for the sake of example on error handling.");
 		firebaseQueue.AddQueueGet (firebase, FirebaseParam.Empty.LimitToLast(-1));
 
 
 		// (~~ -.-)~~
-		DoDebug ("==== Wait for seconds 15f ======");
+		DebugLog ("==== Wait for seconds 15f ======");
 		yield return new WaitForSeconds (15f);
-		DoDebug ("==== Wait over... ====");
+		DebugLog ("==== Wait over... ====");
 
 
 		// Test #2: Calls without using FirebaseQueueManager
 		// The requests could overtake each other (ran asynchronously)
-		firebase.Child("broadcasts", true).Push("{ \"name\": \"dikra\", \"message\": \"hope it runs well...\"}", true);
+		firebase.Child("broadcasts", true).PushJson("{ \"name\": \"dikra\", \"message\": \"hope it runs well...\"}");
 		firebase.GetValue(FirebaseParam.Empty.OrderByKey().LimitToFirst(2));
 		temporary.GetValue ();
 		firebase.GetValue (FirebaseParam.Empty.OrderByKey().LimitToLast(2));
@@ -193,26 +211,26 @@ public class SampleScript : MonoBehaviour
 
 		// ~~(-.- ~~)
 		yield return null;
-		DoDebug ("==== Wait for seconds 15f ======");
+		DebugLog ("==== Wait for seconds 15f ======");
 		yield return new WaitForSeconds (15f);
-		DoDebug ("==== Wait over... ====");
+		DebugLog ("==== Wait over... ====");
 
 
 		// Test #3: Delete the frb_child and broadcasts
 		firebaseQueue.AddQueueGet (firebase);
 		firebaseQueue.AddQueueDelete(temporary);
 		// please notice that the OnSuccess/OnFailed handler is not inherited since Child second parameter not set to true.
-		DoDebug("'broadcasts' node is deleted silently.");
+		DebugLog("'broadcasts' node is deleted silently.");
 		firebaseQueue.AddQueueDelete (firebase.Child ("broadcasts")); 
 		firebaseQueue.AddQueueGet (firebase);
 
 		// ~~(-.-)~~
 		yield return null;
-		DoDebug ("==== Wait for seconds 15f ======");
+		DebugLog ("==== Wait for seconds 15f ======");
 		yield return new WaitForSeconds (15f);
-		DoDebug ("==== Wait over... ===="); 
+		DebugLog ("==== Wait over... ===="); 
 		observer.Stop ();
-		DoDebug ("[OBSERVER] FirebaseObserver on " + lastUpdate.FullKey +" stopped!");
+		DebugLog ("[OBSERVER] FirebaseObserver on " + lastUpdate.FullKey +" stopped!");
 	}
 
 

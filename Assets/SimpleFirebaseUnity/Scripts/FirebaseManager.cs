@@ -2,7 +2,7 @@
 
 Class: FirebaseManager.cs
 ==============================================
-Last update: 2016-07-31 (by Dikra)
+Last update: 2018-04-22 (by Dikra)
 ==============================================
 
 Copyright (c) 2016  M Dikra Prasetya
@@ -40,8 +40,7 @@ namespace SimpleFirebaseUnity
         private static FirebaseManager _instance;
         private static object _lock = new object();
 
-        protected FirebaseManager() { }
-
+        #region INSTANCE_LOGICS
         public static FirebaseManager Instance
         {
             get
@@ -81,7 +80,8 @@ namespace SimpleFirebaseUnity
                             Debug.Log("[Firebase Manager] Instance '" + singleton +
                                 "' was generated in the scene with DontDestroyOnLoad.");
                         }
-                        else {
+                        else
+                        {
                             Debug.Log("[Firebase Manager] Using instance already created: " +
                                 _instance.gameObject.name);
                         }
@@ -92,10 +92,11 @@ namespace SimpleFirebaseUnity
             }
         }
 
-		void Awake(){
-			if (Instance != this)
-				Destroy (this);
-		}
+        void Awake()
+        {
+            if (Instance != this)
+                Destroy(this);
+        }
 
 
         private static bool applicationIsQuitting = false;
@@ -112,6 +113,9 @@ namespace SimpleFirebaseUnity
             if (Application.isPlaying)
                 applicationIsQuitting = true;
         }
+
+        #endregion
+
 
     }
 }
