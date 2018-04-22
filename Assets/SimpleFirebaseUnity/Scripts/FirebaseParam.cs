@@ -30,12 +30,19 @@ Copyright (c) 2016  M Dikra Prasetya
 
 */
 
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SimpleFirebaseUnity
 {
 	public struct FirebaseParam
 	{
+        public enum HttpMethodName
+        {
+            GET, POST, PUT, PATCH, DELETE
+        }
+
+        Dictionary<string, string> header;
 		string param;
 
 		/// <summary>
@@ -48,6 +55,17 @@ namespace SimpleFirebaseUnity
 				return param;
 			}
 		}
+
+        /// <summary>
+		/// Created HttpHeader for REST API call
+		/// </summary>
+		public Dictionary<string, string> HttpHeader
+        {
+            get
+            {
+                return header;
+            }
+        }
 
         /// <summary>
         /// Created parameter for REST API call with the symbols encoded to url-safe escape characters.
@@ -63,16 +81,42 @@ namespace SimpleFirebaseUnity
 		/// <summary>
 		/// Create new FirebaseQuery
 		/// </summary>
-		/// <param name="param">REST call parameters on a string. Example: &quot;orderBy=&#92;"$key&#92;"&quot;print=pretty&quot;auth=secret123"></param>
+		/// <param name="_param">REST call parameters on a string. Example: &quot;orderBy=&#92;"$key&#92;"&quot;print=pretty&quot;auth=secret123"></param>
 		public FirebaseParam(string _param = "")
 		{
 			param = _param;
-		}
+            header = new Dictionary<string, string>();
+        }
 
-		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// <summary>
+		/// Create new FirebaseQuery
 		/// </summary>
-		public FirebaseParam Add(string parameter)
+		/// <param name="_param">REST call parameters on a string. Example: &quot;orderBy=&#92;"$key&#92;"&quot;print=pretty&quot;auth=secret123"></param>
+        /// <param name="_header">REST call Http Headers."></param>
+		public FirebaseParam(string _param, Dictionary<string, string> _header)
+        {
+            param = _param;
+            header = _header;
+        }
+
+        /// <summary>
+		/// Create new FirebaseQuery
+		/// </summary>
+		/// <param name="param">REST call parameters on a string. Example: &quot;orderBy=&#92;"$key&#92;"&quot;print=pretty&quot;auth=secret123"></param>
+		public FirebaseParam(FirebaseParam copy)
+        {
+            param = copy.Parameter;
+            header = new Dictionary<string, string>();
+
+            foreach (var kv in header){
+                header.Add(kv.Key, kv.Value);
+            }
+        }
+
+        /// <summary>
+        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// </summary>
+        public FirebaseParam Add(string parameter)
 		{
 			if (param != null && param.Length > 0)
 				param += "&";
@@ -84,39 +128,40 @@ namespace SimpleFirebaseUnity
 		/// <summary>
 		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data . Set quoted parameter if necessary
 		/// </summary>
-		public FirebaseParam Add(string header, string value, bool quoted = true)
+		public FirebaseParam Add(string name, string value, bool quoted = true)
 		{
-			return (quoted) ? Add(header + "=\"" + value + "\"") : Add(header + "=" + value);
+			return (quoted) ? Add(name + "=\"" + value + "\"") : Add(name + "=" + value);
 		}
 
 		/// <summary>
 		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
 		/// </summary>
-		public FirebaseParam Add(string header, int value)
+		public FirebaseParam Add(string name, int value)
 		{
-			return Add(header + "=" + value);
+			return Add(name + "=" + value);
 		}
 
 		/// <summary>
 		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
 		/// </summary>
-		public FirebaseParam Add(string header, float value)
+		public FirebaseParam Add(string name, float value)
 		{
-			return Add(header + "=" + value);
+			return Add(name + "=" + value);
 		}
 
 		/// <summary>
 		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
 		/// </summary>
-		public FirebaseParam Add(string header, bool value)
+		public FirebaseParam Add(string name, bool value)
 		{
-			return Add(header + "=" + value);
+			return Add(name + "=" + value);
 		}
 
-		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
-		/// </summary>
-		public FirebaseParam OrderByChild(string key)
+
+        /// <summary>
+        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// </summary>
+        public FirebaseParam OrderByChild(string key)
 		{
 			return Add("orderBy", key);
 		}
@@ -289,15 +334,75 @@ namespace SimpleFirebaseUnity
 			return Add("auth=" + cred);
 		}
 
-		public override string ToString()
-		{
-			return param;
-		}
-
-		/// <summary>
-		/// Empty paramete or \"\"
+        /// <summary>
+		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
 		/// </summary>
-		public static FirebaseParam Empty
+		public FirebaseParam AccesToken(string access_token)
+        {
+            return Add("access_token=" + access_token);
+        }
+        
+        /// <summary>
+        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// </summary>
+        public FirebaseParam AddHttpHeader(string name, string value)
+        {
+            if (header.ContainsKey(name))
+                header[name] = value;
+            else
+                header.Add(name, value);
+
+            return this;
+        }
+
+        /// <summary>
+        /// WARNING: This plugin's Firebase request implementations are using X-HTTP-Method-Override by default.
+        /// Only use this method to create a custom request or re-override Http Method at your own risk.
+		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// </summary>
+		public FirebaseParam HttpMethodOverride(string methodOverride)
+        {
+            return AddHttpHeader("X-HTTP-Method-Override" , methodOverride);
+        }
+
+        /// <summary>
+        /// WARNING: This plugin's Firebase request implementations are using X-HTTP-Method-Override by default.
+        /// Only use this method to create a custom request or re-override Http Method at your own risk.
+		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// </summary>
+        public FirebaseParam HttpMethodOverride(HttpMethodName methodName)
+        {
+            return AddHttpHeader("X-HTTP-Method-Override" , methodName.ToString());
+        }
+
+        /// <summary>
+        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// </summary>
+        public FirebaseParam XFirebaseEtagHeader()
+        {
+            return AddHttpHeader("X-Firebase-ETag", "true");
+        }
+
+        /// <summary>
+        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// </summary>
+        public FirebaseParam IfMatchHeader(string value)
+        {
+            return AddHttpHeader("if-match", value);
+        }
+
+        /// <summary>
+        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// </summary>
+        public FirebaseParam KeepAliveHeader()
+        {
+            return AddHttpHeader("Keep-Alive", "true");
+        }
+
+        /// <summary>
+        /// Empty paramete or \"\"
+        /// </summary>
+        public static FirebaseParam Empty
 		{
 			get
 			{

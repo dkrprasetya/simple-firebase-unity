@@ -66,7 +66,7 @@ namespace SimpleFirebaseUnity
                 val_obj = obj;
 
             keys = null;
-            json = _json;
+            json = (_json == null)?"":_json;
         }
 
         /// <summary>

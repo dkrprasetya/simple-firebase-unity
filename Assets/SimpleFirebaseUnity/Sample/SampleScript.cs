@@ -206,7 +206,7 @@ public class SampleScript : MonoBehaviour
 
         // Test #2: Calls without using FirebaseQueueManager
         // The requests could overtake each other (ran asynchronously)
-        firebase.Child("broadcasts", true).PushJson("{ \"name\": \"dikra\", \"message\": \"hope it runs well...\"}");
+        firebase.Child("broadcasts", true).Push("{ \"name\": \"dikra\", \"message\": \"hope it runs well...\"}", false);
         firebase.GetValue(FirebaseParam.Empty.OrderByKey().LimitToFirst(2));
         temporary.GetValue();
         firebase.GetValue(FirebaseParam.Empty.OrderByKey().LimitToLast(2));
