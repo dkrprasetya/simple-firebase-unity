@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿// Last update: 2018-04-22  (by Dikra)
+
+using UnityEngine;
 
 using SimpleFirebaseUnity;
 using SimpleFirebaseUnity.MiniJSON;
@@ -21,9 +23,9 @@ public class SampleScript : MonoBehaviour
     void Start()
     {
         textMesh.text = "";
-		StartCoroutine (Tests ());
+        StartCoroutine(Tests());
     }
-    
+
     void GetOKHandler(Firebase sender, DataSnapshot snapshot)
     {
         DebugLog("[OK] Get from key: <" + sender.FullKey + ">");
@@ -54,15 +56,15 @@ public class SampleScript : MonoBehaviour
         DebugError("[ERR] Set from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
     }
 
-	void UpdateOKHandler(Firebase sender, DataSnapshot snapshot)
-	{
-		DebugLog("[OK] Update from key: <" + sender.FullKey + ">");
-	}
+    void UpdateOKHandler(Firebase sender, DataSnapshot snapshot)
+    {
+        DebugLog("[OK] Update from key: <" + sender.FullKey + ">");
+    }
 
-	void UpdateFailHandler(Firebase sender, FirebaseError err)
-	{
+    void UpdateFailHandler(Firebase sender, FirebaseError err)
+    {
         DebugError("[ERR] Update from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
-	}
+    }
 
     void DelOKHandler(Firebase sender, DataSnapshot snapshot)
     {
@@ -84,25 +86,25 @@ public class SampleScript : MonoBehaviour
         DebugError("[ERR] Push from key: <" + sender.FullKey + ">, " + err.Message + " (" + (int)err.Status + ")");
     }
 
-	void GetRulesOKHandler(Firebase sender, DataSnapshot snapshot)
-	{
-		DebugLog("[OK] GetRules");
-		DebugLog("[OK] Raw Json: " + snapshot.RawJson);
-	}
+    void GetRulesOKHandler(Firebase sender, DataSnapshot snapshot)
+    {
+        DebugLog("[OK] GetRules");
+        DebugLog("[OK] Raw Json: " + snapshot.RawJson);
+    }
 
-	void GetRulesFailHandler(Firebase sender, FirebaseError err)
-	{
-		DebugError("[ERR] GetRules,  " + err.Message + " (" + (int)err.Status + ")");
-	}
+    void GetRulesFailHandler(Firebase sender, FirebaseError err)
+    {
+        DebugError("[ERR] GetRules,  " + err.Message + " (" + (int)err.Status + ")");
+    }
 
-	void GetTimeStamp(Firebase sender, DataSnapshot snapshot)
-	{
-		long timeStamp = snapshot.Value<long> ();
-		DateTime dateTime = Firebase.TimeStampToDateTime (timeStamp);
+    void GetTimeStamp(Firebase sender, DataSnapshot snapshot)
+    {
+        long timeStamp = snapshot.Value<long>();
+        DateTime dateTime = Firebase.TimeStampToDateTime(timeStamp);
 
-		DebugLog ("[OK] Get on timestamp key: <" + sender.FullKey + ">");
-		DebugLog("Date: " + timeStamp + " --> " + dateTime.ToString ());
-	}
+        DebugLog("[OK] Get on timestamp key: <" + sender.FullKey + ">");
+        DebugLog("Date: " + timeStamp + " --> " + dateTime.ToString());
+    }
 
     void DebugLog(string str)
     {
@@ -132,136 +134,139 @@ public class SampleScript : MonoBehaviour
     }
 
     IEnumerator Tests()
-	{
-		// Inits Firebase using Firebase Secret Key as Auth
-		// The current provided implementation not yet including Auth Token Generation
-		// If you're using this sample Firebase End, 
-		// there's a possibility that your request conflicts with other simple-firebase-c# user's request
-		Firebase firebase = Firebase.CreateNew ("simple-firebase-csharp.firebaseio.com", "UPaocwJVKvhnKL1orrf5XwWHMz3HUzckgCnGp6id");
+    {
+        // Inits Firebase using Firebase Secret Key as Auth
+        // The current provided implementation not yet including Auth Token Generation
+        // If you're using this sample Firebase End, 
+        // there's a possibility that your request conflicts with other simple-firebase-c# user's request
+        Firebase firebase = Firebase.CreateNew("simple-firebase-csharp.firebaseio.com", "UPaocwJVKvhnKL1orrf5XwWHMz3HUzckgCnGp6id");
 
-		// Init callbacks
-		firebase.OnGetSuccess += GetOKHandler;
-		firebase.OnGetFailed += GetFailHandler;
-		firebase.OnSetSuccess += SetOKHandler;
-		firebase.OnSetFailed += SetFailHandler;
-		firebase.OnUpdateSuccess += UpdateOKHandler;
-		firebase.OnUpdateFailed += UpdateFailHandler;
-		firebase.OnPushSuccess += PushOKHandler;
-		firebase.OnPushFailed += PushFailHandler;
-		firebase.OnDeleteSuccess += DelOKHandler;
-		firebase.OnDeleteFailed += DelFailHandler;
+        // Init callbacks
+        firebase.OnGetSuccess += GetOKHandler;
+        firebase.OnGetFailed += GetFailHandler;
+        firebase.OnSetSuccess += SetOKHandler;
+        firebase.OnSetFailed += SetFailHandler;
+        firebase.OnUpdateSuccess += UpdateOKHandler;
+        firebase.OnUpdateFailed += UpdateFailHandler;
+        firebase.OnPushSuccess += PushOKHandler;
+        firebase.OnPushFailed += PushFailHandler;
+        firebase.OnDeleteSuccess += DelOKHandler;
+        firebase.OnDeleteFailed += DelFailHandler;
 
-		// Get child node from firebase, if false then all the callbacks are not inherited.
-		Firebase temporary = firebase.Child ("temporary", true);
-		Firebase lastUpdate = firebase.Child ("lastUpdate");
+        // Get child node from firebase, if false then all the callbacks are not inherited.
+        Firebase temporary = firebase.Child("temporary", true);
+        Firebase lastUpdate = firebase.Child("lastUpdate");
 
-		lastUpdate.OnGetSuccess += GetTimeStamp;
+        lastUpdate.OnGetSuccess += GetTimeStamp;
 
-		// Make observer on "last update" time stamp
-		FirebaseObserver observer = new FirebaseObserver(lastUpdate, 1f);
-		observer.OnChange += (Firebase sender, DataSnapshot snapshot)=>{
-			DebugLog("[OBSERVER] Last updated changed to: " + snapshot.Value<long>());
-		};
-		observer.Start ();
-		DebugLog ("[OBSERVER] FirebaseObserver on " + lastUpdate.FullKey +" started!");
+        // Make observer on "last update" time stamp
+        FirebaseObserver observer = new FirebaseObserver(lastUpdate, 1f);
+        observer.OnChange += (Firebase sender, DataSnapshot snapshot) =>
+        {
+            DebugLog("[OBSERVER] Last updated changed to: " + snapshot.Value<long>());
+        };
+        observer.Start();
+        DebugLog("[OBSERVER] FirebaseObserver on " + lastUpdate.FullKey + " started!");
 
-		// Print details
-		DebugLog("Firebase endpoint: " + firebase.Endpoint);
-		DebugLog("Firebase key: " + firebase.Key);
-		DebugLog("Firebase fullKey: " + firebase.FullKey);
-		DebugLog("Firebase child key: " + temporary.Key);
-		DebugLog("Firebase child fullKey: " + temporary.FullKey);
+        // Print details
+        DebugLog("Firebase endpoint: " + firebase.Endpoint);
+        DebugLog("Firebase key: " + firebase.Key);
+        DebugLog("Firebase fullKey: " + firebase.FullKey);
+        DebugLog("Firebase child key: " + temporary.Key);
+        DebugLog("Firebase child fullKey: " + temporary.FullKey);
 
-		// Unnecessarily skips a frame, really, unnecessary.
-		yield return null;
+        // Unnecessarily skips a frame, really, unnecessary.
+        yield return null;
 
-		// Create a FirebaseQueue
-		FirebaseQueue firebaseQueue = new FirebaseQueue();
+        // Create a FirebaseQueue
+        FirebaseQueue firebaseQueue = new FirebaseQueue(true, 3, 1f); // if _skipOnRequestError is set to false,
+                                                                    // queue will stuck on request Get.LimitToLast(-1).
+                                                                    // Make sure all request has no
 
-		// Test #1: Test all firebase commands, using FirebaseQueueManager
-		// The requests should be running in order 
-		firebaseQueue.AddQueueSet (firebase, GetSampleScoreBoard (), FirebaseParam.Empty.PrintSilent ());
-		firebaseQueue.AddQueuePush (firebase.Child ("broadcasts", true), "{ \"name\": \"simple-firebase-csharp\", \"message\": \"awesome!\"}", false);
-		firebaseQueue.AddQueueSetTimeStamp (firebase, "lastUpdate");
-		firebaseQueue.AddQueueGet (firebase, "print=pretty");
-		firebaseQueue.AddQueueUpdate (firebase.Child ("layout", true), "{\"x\": 5.8, \"y\":-94}");
-		firebaseQueue.AddQueueGet (firebase.Child ("layout", true));
-		firebaseQueue.AddQueueGet (lastUpdate);
+        // Test #1: Test all firebase commands, using FirebaseQueueManager
+        // The requests should be running in order 
+        firebaseQueue.AddQueueSet(firebase, GetSampleScoreBoard(), FirebaseParam.Empty.PrintSilent());
+        firebaseQueue.AddQueuePush(firebase.Child("broadcasts", true), "{ \"name\": \"simple-firebase-csharp\", \"message\": \"awesome!\"}", false);
+        firebaseQueue.AddQueueSetTimeStamp(firebase, "lastUpdate");
+        firebaseQueue.AddQueueGet(firebase, "print=pretty");
+        firebaseQueue.AddQueueUpdate(firebase.Child("layout", true), "{\"x\": 5.8, \"y\":-94}");
+        firebaseQueue.AddQueueGet(firebase.Child("layout", true));
+        firebaseQueue.AddQueueGet(lastUpdate);
 
-		//Deliberately make an error for an example
-		DebugWarning("[WARNING] There is one invalid request below (Get with invalid OrderBy) which will gives error, only for the sake of example on error handling.");
-		firebaseQueue.AddQueueGet (firebase, FirebaseParam.Empty.LimitToLast(-1));
-
-
-		// (~~ -.-)~~
-		DebugLog ("==== Wait for seconds 15f ======");
-		yield return new WaitForSeconds (15f);
-		DebugLog ("==== Wait over... ====");
+        //Deliberately make an error for an example
+        DebugWarning("[WARNING] There is one invalid request below (Get with invalid OrderBy) which will gives error, only for the sake of example on error handling.");
+        firebaseQueue.AddQueueGet(firebase, FirebaseParam.Empty.LimitToLast(-1));
 
 
-		// Test #2: Calls without using FirebaseQueueManager
-		// The requests could overtake each other (ran asynchronously)
-		firebase.Child("broadcasts", true).PushJson("{ \"name\": \"dikra\", \"message\": \"hope it runs well...\"}");
-		firebase.GetValue(FirebaseParam.Empty.OrderByKey().LimitToFirst(2));
-		temporary.GetValue ();
-		firebase.GetValue (FirebaseParam.Empty.OrderByKey().LimitToLast(2));
-		temporary.GetValue ();
-		firebase.Child ("scores", true).GetValue(FirebaseParam.Empty.OrderByChild ("rating").LimitToFirst(2));
-		firebase.GetRules (GetRulesOKHandler, GetRulesFailHandler);
-
-		// ~~(-.- ~~)
-		yield return null;
-		DebugLog ("==== Wait for seconds 15f ======");
-		yield return new WaitForSeconds (15f);
-		DebugLog ("==== Wait over... ====");
+        // (~~ -.-)~~
+        DebugLog("==== Wait for seconds 15f ======");
+        yield return new WaitForSeconds(15f);
+        DebugLog("==== Wait over... ====");
 
 
-		// Test #3: Delete the frb_child and broadcasts
-		firebaseQueue.AddQueueGet (firebase);
-		firebaseQueue.AddQueueDelete(temporary);
-		// please notice that the OnSuccess/OnFailed handler is not inherited since Child second parameter not set to true.
-		DebugLog("'broadcasts' node is deleted silently.");
-		firebaseQueue.AddQueueDelete (firebase.Child ("broadcasts")); 
-		firebaseQueue.AddQueueGet (firebase);
+        // Test #2: Calls without using FirebaseQueueManager
+        // The requests could overtake each other (ran asynchronously)
+        firebase.Child("broadcasts", true).PushJson("{ \"name\": \"dikra\", \"message\": \"hope it runs well...\"}");
+        firebase.GetValue(FirebaseParam.Empty.OrderByKey().LimitToFirst(2));
+        temporary.GetValue();
+        firebase.GetValue(FirebaseParam.Empty.OrderByKey().LimitToLast(2));
+        temporary.GetValue();
+        firebase.Child("scores", true).GetValue(FirebaseParam.Empty.OrderByChild("rating").LimitToFirst(2));
+        firebase.GetRules(GetRulesOKHandler, GetRulesFailHandler);
 
-		// ~~(-.-)~~
-		yield return null;
-		DebugLog ("==== Wait for seconds 15f ======");
-		yield return new WaitForSeconds (15f);
-		DebugLog ("==== Wait over... ===="); 
-		observer.Stop ();
-		DebugLog ("[OBSERVER] FirebaseObserver on " + lastUpdate.FullKey +" stopped!");
-	}
+        // ~~(-.- ~~)
+        yield return null;
+        DebugLog("==== Wait for seconds 15f ======");
+        yield return new WaitForSeconds(15f);
+        DebugLog("==== Wait over... ====");
 
 
-	Dictionary<string, object> GetSampleScoreBoard()
-	{
-		Dictionary<string, object> scoreBoard = new Dictionary<string, object> ();
-		Dictionary<string, object> scores = new Dictionary<string, object> ();
-		Dictionary<string, object> p1 = new Dictionary<string, object> ();
-		Dictionary<string, object> p2 = new Dictionary<string, object> ();
-		Dictionary<string, object> p3 = new Dictionary<string, object> ();
+        // Test #3: Delete the frb_child and broadcasts
+        firebaseQueue.AddQueueGet(firebase);
+        firebaseQueue.AddQueueDelete(temporary);
+        // please notice that the OnSuccess/OnFailed handler is not inherited since Child second parameter not set to true.
+        DebugLog("'broadcasts' node is deleted silently.");
+        firebaseQueue.AddQueueDelete(firebase.Child("broadcasts"));
+        firebaseQueue.AddQueueGet(firebase);
 
-		p1.Add ("name", "simple");
-		p1.Add("score", 80);
+        // ~~(-.-)~~
+        yield return null;
+        DebugLog("==== Wait for seconds 15f ======");
+        yield return new WaitForSeconds(15f);
+        DebugLog("==== Wait over... ====");
+        observer.Stop();
+        DebugLog("[OBSERVER] FirebaseObserver on " + lastUpdate.FullKey + " stopped!");
+    }
 
-		p2.Add ("name", "firebase");
-		p2.Add ("score", 100);
 
-		p3.Add ("name", "csharp");
-		p3.Add ("score", 60);
+    Dictionary<string, object> GetSampleScoreBoard()
+    {
+        Dictionary<string, object> scoreBoard = new Dictionary<string, object>();
+        Dictionary<string, object> scores = new Dictionary<string, object>();
+        Dictionary<string, object> p1 = new Dictionary<string, object>();
+        Dictionary<string, object> p2 = new Dictionary<string, object>();
+        Dictionary<string, object> p3 = new Dictionary<string, object>();
 
-		scores.Add ("p1", p1);
-		scores.Add ("p2", p2);
-		scores.Add ("p3", p3);
+        p1.Add("name", "simple");
+        p1.Add("score", 80);
 
-		scoreBoard.Add ("scores", scores);
+        p2.Add("name", "firebase");
+        p2.Add("score", 100);
 
-		scoreBoard.Add("layout", Json.Deserialize("{\"x\": 0, \"y\":10}") as Dictionary<string, object>);
-		scoreBoard.Add ("resizable", true);
+        p3.Add("name", "csharp");
+        p3.Add("score", 60);
 
-		scoreBoard.Add("temporary" , "will be deleted later");
+        scores.Add("p1", p1);
+        scores.Add("p2", p2);
+        scores.Add("p3", p3);
 
-		return scoreBoard;
-	}
+        scoreBoard.Add("scores", scores);
+
+        scoreBoard.Add("layout", Json.Deserialize("{\"x\": 0, \"y\":10}") as Dictionary<string, object>);
+        scoreBoard.Add("resizable", true);
+
+        scoreBoard.Add("temporary", "will be deleted later");
+
+        return scoreBoard;
+    }
 }
