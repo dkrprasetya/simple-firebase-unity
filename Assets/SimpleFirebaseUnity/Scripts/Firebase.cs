@@ -779,7 +779,7 @@ namespace SimpleFirebaseUnity
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         public void SetTimeStamp(string keyName, string param = "")
         {
-            Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, false, param);
+            SetTimeStamp(keyName, new FirebaseParam(param));
         }
 
         /// <summary>
@@ -789,7 +789,34 @@ namespace SimpleFirebaseUnity
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         public void SetTimeStamp(string keyName, FirebaseParam query)
         {
-            Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, false, query);
+            Copy(false).Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, false, query);
+        }
+
+        /// <summary>
+        /// Sets the time stamp with the time since UNIX epoch by server value (in milliseconds).
+        /// </summary>
+        /// <param name="OnSuccess">On success callback.</param>
+        /// <param name="OnFailed">On failed callback.</param>
+        /// <param name="keyName">Key name.</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        public void SetTimeStamp(Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, string keyName, string param = "")
+        {
+            SetTimeStamp(OnSuccess, OnFailed, keyName, new FirebaseParam(param));
+        }
+
+        /// <summary>
+        /// Sets the time stamp with the time since UNIX epoch by server value (in milliseconds).
+        /// </summary>
+        /// <param name="OnSuccess">On success callback.</param>
+        /// <param name="OnFailed">On failed callback.</param>
+        /// <param name="keyName">Key name.</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        public void SetTimeStamp(Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, string keyName, FirebaseParam query)
+        {
+            Firebase temp = Copy(false);
+            temp.OnSetSuccess += OnSuccess;
+            temp.OnSetFailed += OnFailed;
+            temp.Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, false, query);
         }
 
 
