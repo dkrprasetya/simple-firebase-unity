@@ -2,10 +2,9 @@
 
 Class: FirebaseObserver.cs
 ==============================================
-Last update: 2016-07-27  (by Dikra)
+Last update: 2018-05-20  (by Dikra)
 ==============================================
 
-Copyright (c) 2016  M Dikra Prasetya
 
  * MIT LICENSE
  *
@@ -57,9 +56,9 @@ namespace SimpleFirebaseUnity
 		/// <summary>
 		/// Creates an Observer that calls GetValue request at the given refresh rate (in seconds) and checks whether the value has changed.
 		/// </summary>
-		/// <param name="firebase">Firebase.</param>
-		/// <param name="refreshRate">Refresh rate (in seconds).</param>
-		/// <param name="getParam">Parameter value for the Get request that will be called periodically.</param>
+		/// <param name="_firebase">Firebase.</param>
+		/// <param name="_refreshRate">Refresh rate (in seconds).</param>
+		/// <param name="_getParam">Parameter value for the Get request that will be called periodically.</param>
 		public FirebaseObserver(Firebase _firebase, float _refreshRate, string _getParam = "")
 		{
 			active = false;
@@ -74,9 +73,9 @@ namespace SimpleFirebaseUnity
 		/// <summary>
 		/// Creates an Observer that calls GetValue request at the given refresh rate (in seconds) and checks whether the value has changed.
 		/// </summary>
-		/// <param name="firebase">Firebase.</param>
-		/// <param name="refreshRate">Refresh rate (in seconds).</param>
-		/// <param name="getParam">Parameter value for the Get request that will be called periodically.</param>
+		/// <param name="_firebase">Firebase.</param>
+		/// <param name="_refreshRate">Refresh rate (in seconds).</param>
+		/// <param name="_getParam">Parameter value for the Get request that will be called periodically.</param>
 		public FirebaseObserver(Firebase _firebase, float _refreshRate, FirebaseParam _getParam)
 		{
 			active = false;
@@ -133,8 +132,8 @@ namespace SimpleFirebaseUnity
 				yield return new WaitForSeconds (refreshRate);
 			}
 		}
-
-		void CompareSnapshot(Firebase target, DataSnapshot snapshot)
+        
+		void CompareSnapshot(Firebase dummyVar, DataSnapshot snapshot)
 		{
 			if (firstTime) {
 				firstTime = false;

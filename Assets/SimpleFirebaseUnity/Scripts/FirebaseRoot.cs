@@ -2,10 +2,9 @@
 
 Class: FirebaseRoot.cs
 ==============================================
-Last update: 2016-06-23  (by Dikra)
+Last update: 2018-05-20  (by Dikra)
 ==============================================
 
-Copyright (c) 2016  M Dikra Prasetya
 
  * MIT LICENSE
  *
@@ -39,9 +38,9 @@ namespace SimpleFirebaseUnity
 {
     internal class FirebaseRoot : Firebase
     {
-		protected static bool firstTimeInitiated = true;
-		protected string host;
-		protected string cred;
+        protected static bool firstTimeInitiated = true;
+        protected string host;
+        protected string cred;
 
         /// <summary>
         /// Returns .json endpoint to this Firebase point
@@ -70,35 +69,35 @@ namespace SimpleFirebaseUnity
             }
         }
 
-		/// <summary>
-		/// Returns .json endpoint to Firebase Rules.
-		/// </summary>
-		public override string RulesEndpoint
-		{
-			get 
-			{
-				return "https://" + root.Host + "/.settings/rules.json";
-			}
-		}
+        /// <summary>
+        /// Returns .json endpoint to Firebase Rules.
+        /// </summary>
+        public override string RulesEndpoint
+        {
+            get 
+            {
+                return "https://" + root.Host + "/.settings/rules.json";
+            }
+        }
 
-		/// <summary>
-		/// Copy this instance.
-		/// </summary>
-		public FirebaseRoot Copy()
-		{
-			return new FirebaseRoot (host, cred);
-		}
+        /// <summary>
+        /// Copy this instance.
+        /// </summary>
+        public FirebaseRoot Copy()
+        {
+            return new FirebaseRoot (host, cred);
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SimpleFirebaseUnity.FirebaseRoot"/> class.
-		/// </summary>
-		/// <param name="_host">Host.</param>
-		/// <param name="_cred">Cred.</param>
-		public FirebaseRoot(string _host, string _cred = "")
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SimpleFirebaseUnity.FirebaseRoot"/> class.
+        /// </summary>
+        /// <param name="_host">Host.</param>
+        /// <param name="_cred">Cred.</param>
+        public FirebaseRoot(string _host, string _cred = "")
         {
             if (firstTimeInitiated)
             {
-				ServicePointManager.ServerCertificateValidationCallback += RemoteCertificateValidationCallback;
+                ServicePointManager.ServerCertificateValidationCallback += RemoteCertificateValidationCallback;
                 firstTimeInitiated = false;
             }
 
@@ -123,22 +122,22 @@ namespace SimpleFirebaseUnity
             return true; // override certificate, we trust Firebase :D
         }
 
-		/// <summary>
-		/// Starts the coroutine.
-		/// </summary>
-		/// <param name="routine">Routine.</param>
-		public void StartCoroutine(IEnumerator routine)
-		{
-			FirebaseManager.Instance.StartCoroutine (routine);
-		}
+        /// <summary>
+        /// Starts the coroutine.
+        /// </summary>
+        /// <param name="routine">Routine.</param>
+        public void StartCoroutine(IEnumerator routine)
+        {
+            FirebaseManager.Instance.StartCoroutine (routine);
+        }
 
-		/// <summary>
-		/// Stops the coroutine.
-		/// </summary>
-		/// <param name="routine">Routine.</param>
-		public void StopCoroutine(IEnumerator routine)
-		{
-			FirebaseManager.Instance.StopCoroutine (routine);
-		}
+        /// <summary>
+        /// Stops the coroutine.
+        /// </summary>
+        /// <param name="routine">Routine.</param>
+        public void StopCoroutine(IEnumerator routine)
+        {
+            FirebaseManager.Instance.StopCoroutine (routine);
+        }
     }
 }

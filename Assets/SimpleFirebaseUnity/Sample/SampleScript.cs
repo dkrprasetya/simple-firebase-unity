@@ -1,4 +1,4 @@
-﻿// Last update: 2018-04-22  (by Dikra)
+﻿// Last update: 2018-05-20  (by Dikra)
 
 using UnityEngine;
 
@@ -135,11 +135,14 @@ public class SampleScript : MonoBehaviour
 
     IEnumerator Tests()
     {
+        // README
+        DebugLog("This plugin simply wraps Firebase's RealTime Database REST API.\nPlease read here for better understanding of the API: https://firebase.google.com/docs/reference/rest/database/\n");
+              
         // Inits Firebase using Firebase Secret Key as Auth
         // The current provided implementation not yet including Auth Token Generation
         // If you're using this sample Firebase End, 
         // there's a possibility that your request conflicts with other simple-firebase-c# user's request
-        Firebase firebase = Firebase.CreateNew("simple-firebase-csharp.firebaseio.com", "UPaocwJVKvhnKL1orrf5XwWHMz3HUzckgCnGp6id");
+        Firebase firebase = Firebase.CreateNew("https://simple-firebase-unity.firebaseio.com", "WQV9t78OywD8Pp7jvGuAi8K6g0MV8p9FAzkJ7rWK");
 
         // Init callbacks
         firebase.OnGetSuccess += GetOKHandler;
@@ -179,14 +182,13 @@ public class SampleScript : MonoBehaviour
         yield return null;
 
         // Create a FirebaseQueue
-        FirebaseQueue firebaseQueue = new FirebaseQueue(true, 3, 1f); // if _skipOnRequestError is set to false,
-                                                                    // queue will stuck on request Get.LimitToLast(-1).
-                                                                    // Make sure all request has no
+        FirebaseQueue firebaseQueue = new FirebaseQueue(true, 3, 1f); // if _skipOnRequestError is set to false, queue will stuck on request Get.LimitToLast(-1).
+                                                                    
 
         // Test #1: Test all firebase commands, using FirebaseQueueManager
         // The requests should be running in order 
         firebaseQueue.AddQueueSet(firebase, GetSampleScoreBoard(), FirebaseParam.Empty.PrintSilent());
-        firebaseQueue.AddQueuePush(firebase.Child("broadcasts", true), "{ \"name\": \"simple-firebase-csharp\", \"message\": \"awesome!\"}", false);
+        firebaseQueue.AddQueuePush(firebase.Child("broadcasts", true), "{ \"name\": \"simple-firebase-csharp\", \"message\": \"awesome!\"}", true);
         firebaseQueue.AddQueueSetTimeStamp(firebase, "lastUpdate");
         firebaseQueue.AddQueueGet(firebase, "print=pretty");
         firebaseQueue.AddQueueUpdate(firebase.Child("layout", true), "{\"x\": 5.8, \"y\":-94}");
@@ -196,7 +198,6 @@ public class SampleScript : MonoBehaviour
         //Deliberately make an error for an example
         DebugWarning("[WARNING] There is one invalid request below (Get with invalid OrderBy) which will gives error, only for the sake of example on error handling.");
         firebaseQueue.AddQueueGet(firebase, FirebaseParam.Empty.LimitToLast(-1));
-
 
         // (~~ -.-)~~
         DebugLog("==== Wait for seconds 15f ======");
@@ -211,6 +212,9 @@ public class SampleScript : MonoBehaviour
         temporary.GetValue();
         firebase.GetValue(FirebaseParam.Empty.OrderByKey().LimitToLast(2));
         temporary.GetValue();
+
+        // Please note that orderBy "rating" is possible because I already defined the index on the Rule.
+        // If you use your own endpoint, you might get an error if you haven't set it on your Rule.
         firebase.Child("scores", true).GetValue(FirebaseParam.Empty.OrderByChild("rating").LimitToFirst(2));
         firebase.GetRules(GetRulesOKHandler, GetRulesFailHandler);
 
@@ -220,11 +224,16 @@ public class SampleScript : MonoBehaviour
         yield return new WaitForSeconds(15f);
         DebugLog("==== Wait over... ====");
 
+        // We need to clear the queue as the queue is left with one error command (the one we deliberately inserted last time).
+        // When the queue stuck with an error command at its head, the next (or the newly added command) will never be processed.
+        firebaseQueue.ForceClearQueue();
+        yield return null;      
 
         // Test #3: Delete the frb_child and broadcasts
         firebaseQueue.AddQueueGet(firebase);
         firebaseQueue.AddQueueDelete(temporary);
-        // please notice that the OnSuccess/OnFailed handler is not inherited since Child second parameter not set to true.
+
+        // Please notice that the OnSuccess/OnFailed handler is not inherited since Child second parameter not set to true.
         DebugLog("'broadcasts' node is deleted silently.");
         firebaseQueue.AddQueueDelete(firebase.Child("broadcasts"));
         firebaseQueue.AddQueueGet(firebase);

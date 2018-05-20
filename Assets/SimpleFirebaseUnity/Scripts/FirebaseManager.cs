@@ -2,10 +2,9 @@
 
 Class: FirebaseManager.cs
 ==============================================
-Last update: 2018-04-22 (by Dikra)
+Last update: 2018-05-20  (by Dikra)
 ==============================================
 
-Copyright (c) 2016  M Dikra Prasetya
 
  * MIT LICENSE
  *
@@ -94,8 +93,13 @@ namespace SimpleFirebaseUnity
 
         void Awake()
         {
-            if (Instance != this)
-                Destroy(this);
+            if (_instance == null)
+                _instance = this;
+            else
+            {
+                if (Instance != this)
+                    Destroy(this);
+            }
         }
 
 

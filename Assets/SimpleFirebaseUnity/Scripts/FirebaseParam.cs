@@ -2,10 +2,9 @@
 
 Class: FirebaseParam.cs
 ==============================================
-Last update: 2016-06-23  (by Dikra)
+Last update: 2018-05-20  (by Dikra)
 ==============================================
 
-Copyright (c) 2016  M Dikra Prasetya
 
  * MIT LICENSE
  *
@@ -98,11 +97,11 @@ namespace SimpleFirebaseUnity
             param = _param;
             header = _header;
         }
-
+        
         /// <summary>
 		/// Create new FirebaseQuery
 		/// </summary>
-		/// <param name="param">REST call parameters on a string. Example: &quot;orderBy=&#92;"$key&#92;"&quot;print=pretty&quot;auth=secret123"></param>
+		/// <param name="copy">Firebase parameter to copy.</param>
 		public FirebaseParam(FirebaseParam copy)
         {
             param = copy.Parameter;
@@ -114,7 +113,7 @@ namespace SimpleFirebaseUnity
         }
 
         /// <summary>
-        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// For details see https://firebase.google.com/docs/reference/rest/database/
         /// </summary>
         public FirebaseParam Add(string parameter)
 		{
@@ -126,7 +125,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data . Set quoted parameter if necessary
+		/// For details see https://firebase.google.com/docs/reference/rest/database/ . Set quoted parameter if necessary
 		/// </summary>
 		public FirebaseParam Add(string name, string value, bool quoted = true)
 		{
@@ -134,7 +133,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam Add(string name, int value)
 		{
@@ -142,7 +141,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam Add(string name, float value)
 		{
@@ -150,7 +149,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam Add(string name, bool value)
 		{
@@ -159,7 +158,7 @@ namespace SimpleFirebaseUnity
 
 
         /// <summary>
-        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// For details see https://firebase.google.com/docs/reference/rest/database/
         /// </summary>
         public FirebaseParam OrderByChild(string key)
 		{
@@ -167,7 +166,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam OrderByKey()
 		{
@@ -175,7 +174,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam OrderByValue()
 		{
@@ -183,7 +182,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam OrderByPriority()
 		{
@@ -191,7 +190,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam LimitToFirst(int lim)
 		{
@@ -199,7 +198,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam LimitToLast(int lim)
 		{
@@ -207,7 +206,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam StartAt(string start)
 		{
@@ -215,7 +214,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam StartAt(int start)
 		{
@@ -223,7 +222,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam StartAt(bool start)
 		{
@@ -231,7 +230,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam StartAt(float start)
 		{
@@ -239,7 +238,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam EndAt(string end)
 		{
@@ -247,7 +246,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam EndAt(int end)
 		{
@@ -255,7 +254,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam EndAt(bool end)
 		{
@@ -263,7 +262,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam EndAt(float end)
 		{
@@ -271,7 +270,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam EqualTo(string at)
 		{
@@ -279,7 +278,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam EqualTo(int at)
 		{
@@ -287,7 +286,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam EqualTo(bool at)
 		{
@@ -295,7 +294,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam EqualTo(float at)
 		{
@@ -303,7 +302,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam PrintPretty()
 		{
@@ -311,7 +310,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam PrintSilent()
 		{
@@ -319,7 +318,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam Shallow()
 		{
@@ -327,7 +326,7 @@ namespace SimpleFirebaseUnity
 		}
 
 		/// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam Auth(string cred)
 		{
@@ -335,15 +334,15 @@ namespace SimpleFirebaseUnity
 		}
 
         /// <summary>
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam AccesToken(string access_token)
         {
             return Add("access_token=" + access_token);
         }
-        
+
         /// <summary>
-        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// For details see https://firebase.google.com/docs/reference/rest/database/
         /// </summary>
         public FirebaseParam AddHttpHeader(string name, string value)
         {
@@ -353,12 +352,12 @@ namespace SimpleFirebaseUnity
                 header.Add(name, value);
 
             return this;
-        }
+        }      
 
         /// <summary>
         /// WARNING: This plugin's Firebase request implementations are using X-HTTP-Method-Override by default.
         /// Only use this method to create a custom request or re-override Http Method at your own risk.
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
 		public FirebaseParam HttpMethodOverride(string methodOverride)
         {
@@ -368,7 +367,7 @@ namespace SimpleFirebaseUnity
         /// <summary>
         /// WARNING: This plugin's Firebase request implementations are using X-HTTP-Method-Override by default.
         /// Only use this method to create a custom request or re-override Http Method at your own risk.
-		/// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+		/// For details see https://firebase.google.com/docs/reference/rest/database/
 		/// </summary>
         public FirebaseParam HttpMethodOverride(HttpMethodName methodName)
         {
@@ -376,7 +375,7 @@ namespace SimpleFirebaseUnity
         }
 
         /// <summary>
-        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// For details see https://firebase.google.com/docs/reference/rest/database/
         /// </summary>
         public FirebaseParam XFirebaseEtagHeader()
         {
@@ -384,7 +383,7 @@ namespace SimpleFirebaseUnity
         }
 
         /// <summary>
-        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// For details see https://firebase.google.com/docs/reference/rest/database/
         /// </summary>
         public FirebaseParam IfMatchHeader(string value)
         {
@@ -392,7 +391,7 @@ namespace SimpleFirebaseUnity
         }
 
         /// <summary>
-        /// For details see https://firebase.google.com/docs/database/rest/retrieve-data
+        /// For details see https://firebase.google.com/docs/reference/rest/database/
         /// </summary>
         public FirebaseParam KeepAliveHeader()
         {

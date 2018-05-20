@@ -2,10 +2,9 @@
 
 Class: FirebaseError.cs
 ==============================================
-Last update: 2016-06-23  (by Dikra)
+Last update: 2018-05-20  (by Dikra)
 ==============================================
 
-Copyright (c) 2016  M Dikra Prasetya
 
  * MIT LICENSE
  *
@@ -37,12 +36,13 @@ namespace SimpleFirebaseUnity
 {
     public class FirebaseError : Exception
     {
-		const string MESSAGE_ERROR_400 = "Firebase request has invalid child names or invalid/missing/too large data";
-		const string MESSAGE_ERROR_401 = "Firebase request's authorization has failed";
-		const string MESSAGE_ERROR_403 = "Firebase request violates Firebase Realtime Database Rules";
-		const string MESSAGE_ERROR_404 = "Firebase request made over HTTP instead of HTTPS";
-		const string MESSAGE_ERROR_417 = "Firebase request doesn't specify a Firebase database name";
-		const string MESSAGE_ERROR_UNDOCUMENTED = "Firebase request's error is not yet documented on Firebase";
+		const string MESSAGE_ERROR_400 = "Firebase request has an error / bad request. See https://firebase.google.com/docs/reference/rest/database/ for more details.";
+		const string MESSAGE_ERROR_401 = "Firebase request's authorization has failed. See https://firebase.google.com/docs/reference/rest/database/ for more details.";
+		const string MESSAGE_ERROR_404 = "The specified Realtime Database was not found.";
+		const string MESSAGE_ERROR_500 = "The server returned an error.";
+		const string MESSAGE_ERROR_503 = "The specified Firebase Realtime Database is temporarily unavailable, which means the request was not attempted.";
+		const string MESSAGE_ERROR_412 = "The request's specified ETag value in the if-match header did not match the server's value.";
+		const string MESSAGE_ERROR_UNDEFINED = "Undefined error: ";
 
 		protected HttpStatusCode m_Status;
 
@@ -100,11 +100,14 @@ namespace SimpleFirebaseUnity
 				case HttpStatusCode.NotFound:
 					message = MESSAGE_ERROR_404;
 					break;
-				case HttpStatusCode.ExpectationFailed:
-					message = MESSAGE_ERROR_417;
-					break;
-				case HttpStatusCode.Forbidden:
-					message = MESSAGE_ERROR_403;
+				case HttpStatusCode.InternalServerError:
+					message = MESSAGE_ERROR_500 + "\n(" + webEx.Message + ")";
+                    break;
+				case HttpStatusCode.ServiceUnavailable:
+					message = MESSAGE_ERROR_503;
+                    break;
+				case HttpStatusCode.PreconditionFailed:
+					message = MESSAGE_ERROR_412;
 					break;
 				default:
 					message = webEx.Message;
@@ -122,27 +125,30 @@ namespace SimpleFirebaseUnity
 		{
 			string message;
 
-			switch (status) 
-			{
-				case HttpStatusCode.Unauthorized:
-					message = MESSAGE_ERROR_401;
-					break;
-				case HttpStatusCode.BadRequest:
-					message = MESSAGE_ERROR_400;
-					break;
-				case HttpStatusCode.NotFound:
-					message = MESSAGE_ERROR_404;
-					break;
-				case HttpStatusCode.ExpectationFailed:
-					message = MESSAGE_ERROR_417;
-					break;
-				case HttpStatusCode.Forbidden:
-					message = MESSAGE_ERROR_403;
-					break;
-				default:
-					message = MESSAGE_ERROR_UNDOCUMENTED;
-					break;
-			}
+			switch (status)
+            {
+                case HttpStatusCode.Unauthorized:
+                    message = MESSAGE_ERROR_401;
+                    break;
+                case HttpStatusCode.BadRequest:
+                    message = MESSAGE_ERROR_400;
+                    break;
+                case HttpStatusCode.NotFound:
+                    message = MESSAGE_ERROR_404;
+                    break;
+                case HttpStatusCode.InternalServerError:
+					message = MESSAGE_ERROR_500 + ". See the error message for further details.";
+                    break;
+                case HttpStatusCode.ServiceUnavailable:
+                    message = MESSAGE_ERROR_503;
+                    break;
+                case HttpStatusCode.PreconditionFailed:
+                    message = MESSAGE_ERROR_412;
+                    break;
+                default:
+					message = MESSAGE_ERROR_UNDEFINED + status.ToString();
+                    break;
+            }
 
 			return  new FirebaseError (status, message);
 		}

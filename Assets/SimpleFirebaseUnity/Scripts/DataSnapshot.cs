@@ -2,10 +2,9 @@
 
 Class: DataSnapshot.cs
 ==============================================
-Last update: 2016-06-23  (by Dikra)
+Last update: 2018-05-20  (by Dikra)
 ==============================================
 
-Copyright (c) 2016  M Dikra Prasetya
 
  * MIT LICENSE
  *
@@ -35,7 +34,7 @@ using System.Security;
 
 namespace SimpleFirebaseUnity
 {
-	using MiniJSON;
+    using MiniJSON;
 
     public class DataSnapshot
     {
@@ -58,7 +57,7 @@ namespace SimpleFirebaseUnity
         /// <param name="json">Json string</param>
         public DataSnapshot(string _json = "")
         {
-			object obj = (_json != null && _json.Length > 0)?Json.Deserialize(_json):null;
+            object obj = (_json != null && _json.Length > 0)?Json.Deserialize(_json):null;
 
             if (obj is Dictionary<string, object>)
                 val_dict = obj as Dictionary<string, object>;
@@ -125,16 +124,16 @@ namespace SimpleFirebaseUnity
         [SecuritySafeCritical]
         public T Value<T>()
         {
-			try
-			{
-				if (val_obj != null)
-					return (T)val_obj;
-				object obj = val_dict;
-				return (T)obj;
-			}
-			catch {
-				return default(T);
-			}
+            try
+            {
+                if (val_obj != null)
+                    return (T)val_obj;
+                object obj = val_dict;
+                return (T)obj;
+            }
+            catch {
+                return default(T);
+            }
         }
     }
 }

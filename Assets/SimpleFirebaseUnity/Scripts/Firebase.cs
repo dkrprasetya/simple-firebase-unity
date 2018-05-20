@@ -2,10 +2,8 @@
 
 Class: Firebase.cs
 ==============================================
-Last update: 2018-04-22  (by Dikra)
+Last update: 2018-05-20  (by Dikra)
 ==============================================
-
-Copyright (c) 2016  M Dikra Prasetya
 
  * MIT LICENSE
  *
@@ -45,7 +43,7 @@ namespace SimpleFirebaseUnity
     [Serializable]
     public class Firebase
     {
-        const string SERVER_VALUE_TIMESTAMP = "{\".sv\": \"timestamp\"}";
+        public const string SERVER_VALUE_TIMESTAMP = "{\".sv\": \"timestamp\"}";
 
         public Action<Firebase, DataSnapshot> OnGetSuccess;
         public Action<Firebase, FirebaseError> OnGetFailed;
@@ -454,12 +452,12 @@ namespace SimpleFirebaseUnity
         /// OnUpdateFailed action contains the error exception
         /// </summary>
         /// <param name="val">Set value</param>
-        /// <param name="parseToJson">True if string needed to be parsed into Json</param>
+        /// <param name="isJson">True if string is an object parsed in a json string.</param>
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void SetValue(string val, bool parseToJson, string param = "")
+        public void SetValue(string val, bool isJson, string param = "")
         {
-            SetValue(val, parseToJson, new FirebaseParam(param));
+            SetValue(val, isJson, new FirebaseParam(param));
         }
 
         /// <summary>
@@ -468,12 +466,12 @@ namespace SimpleFirebaseUnity
         /// OnSetFailed action contains the error exception
         /// </summary>
         /// <param name="val">Set value</param>
-        /// <param name="parseToJson">True if string needed to be parsed into Json</param>
+        /// <param name="isJson">True if string is an object parsed in a json string.</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void SetValue(string val, bool parseToJson, FirebaseParam query)
+        public void SetValue(string val, bool isJson, FirebaseParam query)
         {
-            if (!parseToJson)
+            if (isJson)
                 SetValueJson(val, query);
             else
                 root.StartCoroutine(JsonSerializeRoutine(val, query, SetValueJson));
@@ -505,6 +503,37 @@ namespace SimpleFirebaseUnity
             root.StartCoroutine(JsonSerializeRoutine(val, query, SetValueJson));
         }
 
+        /// <summary>
+        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnSetFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Set value</param>
+        /// <param name="priority">Priority.</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        /// <returns></returns>
+        public void SetValue(object val, float priority, string param = "")
+        {
+            SetValue(val, priority, new FirebaseParam(param));
+        }
+
+        /// <summary>
+        /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnSetFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Set value</param>
+        /// <param name="priority">Priority.</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <returns></returns>
+        public void SetValue(object val, float priority, FirebaseParam query)
+        {
+            Dictionary<string, object> tempDict = new Dictionary<string, object>();
+            tempDict.Add(".value", val);
+            tempDict.Add(".priority", priority);
+            root.StartCoroutine(JsonSerializeRoutine(tempDict, query, SetValueJson));
+        }
+
 
         /*** UPDATE ***/
 
@@ -516,7 +545,7 @@ namespace SimpleFirebaseUnity
         /// <param name="valJson">Update value in json format</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void UpdateValueJson(string valJson, FirebaseParam query)
+        public void UpdateValue(string valJson, FirebaseParam query)
         {
             try
             {
@@ -564,9 +593,9 @@ namespace SimpleFirebaseUnity
         /// OnUpdateFailed action contains the error exception
         /// </summary>
         /// <param name="val">Update value</param>
-        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void UpdateValue(object val, string param = "")
+        public void UpdateValue(Dictionary<string, object> val, string param = "")
         {
             UpdateValue(val, new FirebaseParam(param));
         }
@@ -576,10 +605,36 @@ namespace SimpleFirebaseUnity
         /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnUpdateFailed action contains the error exception
         /// </summary>
-        /// <param name="valJson">Update value in json format</param>
+        /// <param name="val">Update value</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void UpdateValue(object val, FirebaseParam query)
+        public void UpdateValue(Dictionary<string, object> val, FirebaseParam query)
+        {         
+            root.StartCoroutine(JsonSerializeRoutine(val, query, UpdateValue));
+        }
+
+        /// <summary>
+        /// Update value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnUpdateFailed action contains the error exception
+        /// </summary>
+        /// <param name="valJson">Update value</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        /// <returns></returns>
+        public void UpdateValue(string valJson, string param = "")
+        {
+            UpdateValue(valJson, new FirebaseParam(param));
+        }
+
+        /// <summary>
+        /// Update value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
+        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnUpdateFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Update value</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <returns></returns>
+        internal void UpdateValueObject(object val, FirebaseParam query)
         {
             if (!(val is Dictionary<string, object>))
             {
@@ -589,7 +644,7 @@ namespace SimpleFirebaseUnity
                 return;
             }
 
-            root.StartCoroutine(JsonSerializeRoutine(val, query, UpdateValueJson));
+            root.StartCoroutine(JsonSerializeRoutine(val, query, UpdateValue));
         }
 
         /// <summary>
@@ -597,14 +652,13 @@ namespace SimpleFirebaseUnity
         /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
         /// OnUpdateFailed action contains the error exception
         /// </summary>
-        /// <param name="valJson">Update value</param>
-        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <param name="val">Update value</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void UpdateValueJson(string valJson, string param = "")
+        internal void UpdateValueObject(object val, string param = "")
         {
-            UpdateValueJson(valJson, new FirebaseParam(param));
+            UpdateValueObject(val, new FirebaseParam(param));
         }
-
 
         /*** PUSH ***/
 
@@ -654,12 +708,12 @@ namespace SimpleFirebaseUnity
         /// OnPushFailed action contains the error exception
         /// </summary>
         /// <param name="val">Push value</param>
-        /// <param name="parseToJson">True if string needed to be parsed into Json</param>
+        /// <param name="isJson">True if string is an object parsed in a json string.</param>
         /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
         /// <returns></returns>
-        public void Push(string val, bool parseToJson, string param = "")
+        public void Push(string val, bool isJson, string param = "")
         {
-            Push(val, parseToJson, new FirebaseParam(param));
+            Push(val, isJson, new FirebaseParam(param));
         }
 
         /// <summary>
@@ -668,12 +722,12 @@ namespace SimpleFirebaseUnity
         /// OnPushFailed action contains the error exception
         /// </summary>
         /// <param name="val">Push value</param>
-        /// <param name="parseToJson">True if string needed to be parsed into Json</param>
+        /// <param name="isJson">True if string is an object parsed in a json string.</param>
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         /// <returns></returns>
-        public void Push(string val, bool parseToJson, FirebaseParam query)
+        public void Push(string val, bool isJson, FirebaseParam query)
         {
-            if (!parseToJson)
+            if (isJson)
                 PushJson(val, query);
             else
                 root.StartCoroutine(JsonSerializeRoutine(val, query, PushJson));
@@ -703,6 +757,37 @@ namespace SimpleFirebaseUnity
         public void Push(object val, FirebaseParam query)
         {
             root.StartCoroutine(JsonSerializeRoutine(val, query, PushJson));
+        }
+
+        /// <summary>
+        /// Push a value (with random new key) on a key in Firebase. Calls OnPushSuccess on success, OnPushFailed on failed.
+        /// OnPushSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnPushFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Push value</param>
+        /// <param name="priority">Priority.</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        /// <returns></returns>
+        public void Push(object val, float priority, string param = "")
+        {
+            Push(val, priority, new FirebaseParam(param));
+        }
+
+        /// <summary>
+        /// Push a value (with random new key) on a key in Firebase. Calls OnPushSuccess on success, OnPushFailed on failed.
+        /// OnPushSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnPushFailed action contains the error exception
+        /// </summary>
+        /// <param name="val">Push value</param>
+        /// <param name="priority">Priority.</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        /// <returns></returns>
+        public void Push(object val, float priority, FirebaseParam query)
+        {
+            Dictionary<string, object> tempDict = new Dictionary<string, object>();
+            tempDict.Add(".value", val);
+            tempDict.Add(".priority", priority);
+            root.StartCoroutine(JsonSerializeRoutine(tempDict, query, PushJson));
         }
 
 
@@ -769,7 +854,56 @@ namespace SimpleFirebaseUnity
             Delete(new FirebaseParam(param));
         }
 
+        /*** PRIORITY ***/
 
+        /// <summary>
+        /// Sets the priority of the node.
+        /// </summary>
+        /// <param name="priority">Priority.</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        public void SetPriority(float priority, string param = "")
+        {
+            SetPriority(priority, new FirebaseParam(param));
+        }
+
+        /// <summary>
+        /// Sets the priority of the node.
+        /// </summary>
+        /// <param name="priority">Priority.</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        public void SetPriority(float priority, FirebaseParam query)
+        {
+            Copy(false).Child(".priority").SetValue(priority, query);
+        }
+
+        /// <summary>
+        /// Sets the priority of the node.
+        /// </summary>
+        /// <param name="OnSuccess">On success callback.</param>
+        /// <param name="OnFailed">On failed callback.</param>
+        /// <param name="priority">Priority.</param>
+        /// <param name="param">REST call parameters on a string. Example: "auth=ASDF123"</param>
+        public void SetPriority(Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, float priority, string param = "")
+        {
+            SetPriority(OnSuccess, OnFailed, priority, new FirebaseParam(param));
+        }
+
+        /// <summary>
+        /// Sets the priority of the node.
+        /// </summary>
+        /// <param name="OnSuccess">On success callback.</param>
+        /// <param name="OnFailed">On failed callback.</param>
+        /// <param name="priority">Priority.</param>
+        /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
+        public void SetPriority(Action<Firebase, DataSnapshot> OnSuccess, Action<Firebase, FirebaseError> OnFailed, float priority, FirebaseParam query)
+        {
+            Firebase temp = Copy(false);
+            temp.OnSetSuccess += OnSuccess;
+            temp.OnSetFailed += OnFailed;
+            temp.Child(".priority").SetValue(priority, query);
+        }
+
+        
         /*** TIME STAMP ***/
 
         /// <summary>
@@ -789,7 +923,7 @@ namespace SimpleFirebaseUnity
         /// <param name="query">REST call parameters wrapped in FirebaseQuery class</param>
         public void SetTimeStamp(string keyName, FirebaseParam query)
         {
-            Copy(false).Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, false, query);
+            Copy(false).Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, true, query);
         }
 
         /// <summary>
@@ -816,7 +950,7 @@ namespace SimpleFirebaseUnity
             Firebase temp = Copy(false);
             temp.OnSetSuccess += OnSuccess;
             temp.OnSetFailed += OnFailed;
-            temp.Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, false, query);
+            temp.Child(keyName).SetValue(SERVER_VALUE_TIMESTAMP, true, query);
         }
 
 
@@ -1015,11 +1149,14 @@ namespace SimpleFirebaseUnity
         /// <summary>
         /// Creates new Firebase pointer at a valid Firebase url
         /// </summary>
-        /// <param name="host">Example: "hostname.firebaseio.com" (with no https://)</param>
+        /// <param name="host">Example: "hostname.firebaseio.com" </param>
         /// <param name="credential">Credential value for auth parameter</param>
         /// <returns></returns>
         public static Firebase CreateNew(string host, string credential = "")
         {
+            if (host.StartsWith("https://"))
+                host = host.Substring("https://".Length);
+            
             return new FirebaseRoot(host, credential);
         }
 
@@ -1034,6 +1171,8 @@ namespace SimpleFirebaseUnity
             dateTime = dateTime.AddMilliseconds(unixTimeStamp).ToLocalTime();
             return dateTime;
         }
+
+
 
 #endregion
 
