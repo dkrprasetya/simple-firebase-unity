@@ -113,6 +113,9 @@ observer.Stop (); // Stops the observer coroutine
 #### Notes on Authorization
 For authorization, the easiest way that I could recommend would be to use Firebase's secret key (now deprecated). You could create your own token with Google's API or library then pass it through "auth" or "access_token" parameter. See https://firebase.google.com/docs/database/rest/auth for more detail.
 
+#### Android Manifest
+The included Android manifest is just for adding internet permission to your app just in case. You could delete that and add the permission to your own Android manifest.
+
 ## Releases
 
 ### v1.1
@@ -120,13 +123,13 @@ For authorization, the easiest way that I could recommend would be to use Fireba
 
 2. Namespace is changed to "SimpleFirebaseUnity".
 
-2. Json serialize/deserialize inside Firebase request's process will be handled in different thread, which will prevent blocking on Unity's main thread.
+3. Json serialize/deserialize inside Firebase request's process will be handled in different thread, which will prevent blocking on Unity's main thread.
 
-3. FirebaseQueue is now behaves properly when encountering an error. Pop will not occur until the current head is successfully processed (which previously on that case will just skip the error request instead).
+4. FirebaseQueue is now behaves properly when encountering an error. Pop will not occur until the current head is successfully processed (which previously on that case will just skip the error request instead).
 
-4. Added some new parameters that are now included on Firebase's documentation.
+5. Added some new parameters that are now included on Firebase's documentation.
 
-5. Some minor refactorings are included.
+6. Some minor refactorings are included.
 
 ### v1.0.0b
 Major updates:

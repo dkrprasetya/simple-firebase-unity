@@ -76,8 +76,10 @@ observer.Stop (); // Stops the observer coroutine
 </code></pre>
 <h4><a id="Notes_on_Authorization_112"></a>Notes on Authorization</h4>
 <p>For authorization, the easiest way that I could recommend would be to use Firebase’s secret key (now deprecated). You could create your own token with Google’s API or library then pass it through “auth” or “access_token” parameter. See <a href="https://firebase.google.com/docs/database/rest/auth">https://firebase.google.com/docs/database/rest/auth</a> for more detail.</p>
-<h2><a id="Releases_115"></a>Releases</h2>
-<h3><a id="v11_117"></a>v1.1</h3>
+<h4><a id="Android_Manifest_115"></a>Android Manifest</h4>
+<p>The included Android manifest is just for adding internet permission to your app just in case. You could delete that and add the permission to your own Android manifest.</p>
+<h2><a id="Releases_118"></a>Releases</h2>
+<h3><a id="v11_120"></a>v1.1</h3>
 <ol>
 <li>
 <p>Repository is now on Unity project format, and the scripts are provided as it is inside plugin’s folder.</p>
@@ -98,7 +100,7 @@ observer.Stop (); // Stops the observer coroutine
 <p>Some minor refactorings are included.</p>
 </li>
 </ol>
-<h3><a id="v100b_130"></a>v1.0.0b</h3>
+<h3><a id="v100b_133"></a>v1.0.0b</h3>
 <p>Major updates:</p>
 <ol>
 <li>
@@ -118,12 +120,12 @@ The former is moved to Update request (PATCH as a header, will only update the m
 <p>Plugin is now working on Web platforms. Hopefully now working on all platforms.</p>
 </li>
 </ol>
-<h3><a id="v020_145"></a>v0.2.0</h3>
+<h3><a id="v020_148"></a>v0.2.0</h3>
 <p>Fixed a minor bug on the parameter builder, added handling for print=silent case (which returns status code 204, not the usual 200), and updated the FirebaseError class.</p>
-<h3><a id="v010_148"></a>v0.1.0</h3>
+<h3><a id="v010_151"></a>v0.1.0</h3>
 <p>Simply wraps-up all of the basic methods of Firebase REST API which is documented in <a href="https://www.firebase.com/docs/rest/">https://www.firebase.com/docs/rest/</a></p>
-<h2><a id="Notes_151"></a>Notes</h2>
+<h2><a id="Notes_154"></a>Notes</h2>
 <p>This plugin has been tested and works like a charm on Desktop (Windows &amp; Mac), Web, iOS, and Android. Possibly it also does work well on other platforms since most of the implementation is only a simple http REST request.</p>
-<h2><a id="License_155"></a>License</h2>
+<h2><a id="License_158"></a>License</h2>
 <p>MIT</p>
 </body></html>
