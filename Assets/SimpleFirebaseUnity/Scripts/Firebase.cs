@@ -38,7 +38,10 @@ using System.Net;
 namespace SimpleFirebaseUnity
 {
     using MiniJSON;
+
+#if !UNITY_WEBGL
     using System.Threading;
+#endif      
 
     [Serializable]
     public class Firebase
@@ -69,7 +72,9 @@ namespace SimpleFirebaseUnity
 
         class ParserObjToJson
         {
+#if !UNITY_WEBGL
             Thread parseThread;
+#endif
             public bool isDone;
             public string json;
 
@@ -79,8 +84,13 @@ namespace SimpleFirebaseUnity
             {
                 isDone = false;
                 this.sourceObj = sourceObj;
+
+#if UNITY_WEBGL
+                Run();
+#else
                 parseThread = new Thread(Run);
                 parseThread.Start();
+#endif
             }
 
             void Run()
@@ -103,7 +113,9 @@ namespace SimpleFirebaseUnity
 
         class ParserJsonToSnapshot
         {
+#if !UNITY_WEBGL
             Thread parseThread;
+#endif
             public bool isDone;
             public DataSnapshot snapshot;
 
@@ -113,8 +125,12 @@ namespace SimpleFirebaseUnity
             {
                 isDone = false;
                 this.json = json;
+#if UNITY_WEBGL
+                Run();
+#else
                 parseThread = new Thread(Run);
                 parseThread.Start();
+#endif      
             }
 
             void Run()
