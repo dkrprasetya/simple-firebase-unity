@@ -118,6 +118,9 @@ The included Android manifest is just for adding internet permission to your app
 
 ## Releases
 
+### v1.1.1
+Disabled multi-threading on WebGL platform.
+
 ### v1.1
 1. Repository is now on Unity project format, and the scripts are provided as it is inside plugin's folder.
 
