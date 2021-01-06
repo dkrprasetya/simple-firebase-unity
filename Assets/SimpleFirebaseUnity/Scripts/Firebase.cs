@@ -464,8 +464,8 @@ namespace SimpleFirebaseUnity
 
         /// <summary>
         /// Set value of a key on Firebase. Calls OnUpdateSuccess on success, OnUpdateFailed on failed.
-        /// OnUpdateSuccess action contains the corresponding Firebase and the response Snapshot
-        /// OnUpdateFailed action contains the error exception
+        /// OnSetSuccess action contains the corresponding Firebase and the response Snapshot
+        /// OnSetFailed action contains the error exception
         /// </summary>
         /// <param name="val">Set value</param>
         /// <param name="isJson">True if string is an object parsed in a json string.</param>
